@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Create Project - AutoInspect AI</title>
+    <link rel="stylesheet" href="/static/style.css?v=3.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="bg-gray">
+    <nav class="top-nav">
+        <div class="nav-brand">
+            <span class="brand-text">AutoInspect AI</span>
+        </div>
+        <div class="nav-links">
+            <a href="/" class="nav-link">Home</a>
+            <a href="/projects" class="nav-link">View Projects</a>
+            <a href="/create_project" class="nav-btn active">Create Project</a>
+        </div>
+    </nav>
+
+    <div class="form-container-wrapper">
+        <div class="modern-card form-card">
+            <h2>Create New Inspection Project</h2>
+            <p class="form-subtitle">Enter the vehicle details to start a new damage detection session.</p>
+
+            <form id="createProjectForm" class="project-form">
+                <div class="form-group">
+                    <label for="projectName">Project Name</label>
+                    <input type="text" id="projectName" name="projectName"
+                        placeholder="e.g., John Doe - Front Collision" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="carMake">Car Make</label>
+                        <input type="text" id="carMake" name="carMake" placeholder="e.g., Toyota" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="carName">Car Model/Name</label>
+                        <input type="text" id="carName" name="carName" placeholder="e.g., Camry" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="carYear">Year Registered</label>
+                    <input type="number" id="carYear" name="carYear" min="1900" max="2030" placeholder="e.g., 2022"
+                        required>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary w-full">Create and Continue to Analysis</button>
+                    <a href="/" class="btn-secondary w-full text-center mt-3">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('createProjectForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // Get values
+            const projectName = document.getElementById('projectName').value;
+            const carMake = document.getElementById('carMake').value;
+            const carName = document.getElementById('carName').value;
+            const carYear = document.getElementById('carYear').value;
+
+            // Generate unique ID
+            const projectId = 'proj_' + Date.now();
+
+            // Create project object
+            const project = {
+                id: projectId,
+                name: projectName,
+                make: carMake,
+                model: carName,
+                year: carYear,
+                dateCreated: new Date().toISOString(),
+                // could add status or other metadata here
+            };
+
+            // Save to LocalStorage
+            let projects = JSON.parse(localStorage.getItem('autoinspect_projects')) || [];
+            projects.push(project);
+            localStorage.setItem('autoinspect_projects', JSON.stringify(projects));
+
+            // Set as current project and redirect
+            localStorage.setItem('current_project', projectId);
+            window.location.href = `/select_input?project=${projectId}`;
+        });
+    </script>
+</body>
+
+</html>

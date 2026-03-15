@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Video Analysis - AutoInspect AI</title>
+    <link rel="stylesheet" href="/static/style.css?v=3.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="bg-gray">
+    <nav class="top-nav">
+        <div class="nav-brand">
+            <span class="brand-text">AutoInspect AI</span>
+        </div>
+        <div class="nav-links">
+            <a href="/" class="nav-link">Home</a>
+            <a href="/projects" class="nav-link">View Projects</a>
+            <a href="/create_project" class="nav-btn">Create Project</a>
+        </div>
+    </nav>
+
+    <!-- Context Banner -->
+    <div class="project-banner" id="projectHeader" style="display: none;">
+        <div class="project-info">
+            <h2 id="currentProjectName" style="color: var(--primary-color);"></h2>
+            <p id="currentVehicleInfo" class="vehicle-info"></p>
+        </div>
+    </div>
+
+    <!-- Main Container Layout with Margin spacing -->
+    <div class="main-detection-container">
+        <div class="container" style="max-width: 1200px;">
+            <header>
+                <h1>Video Damage Analysis</h1>
+                <p>Upload a walkaround video of the vehicle for frame-by-frame damage evaluation.</p>
+                <div style="margin-top: 1rem;">
+                    <a href="/select_input" class="btn-secondary small" id="backToSelectionBtn">Back to Selection</a>
+                </div>
+            </header>
+
+            <div class="input-section" id="videoSection">
+                <div class="upload-card" style="max-width: 600px; margin: 0 auto 30px auto;">
+                    <h3>Upload Walkaround Video</h3>
+                    <label for="videoUpload" class="upload-label">
+                        <span id="videoUploadText">Choose Video File (.mp4, .webm)...</span>
+                        <input type="file" id="videoUpload" accept="video/*">
+                    </label>
+
+                    <div class="video-preview-container" style="display: none; width: 100%; margin-top: 15px;">
+                        <video id="videoPreview" controls style="width: 100%; border-radius: 8px;"></video>
+                    </div>
+                </div>
+
+                <div class="action-section">
+                    <button id="analyzeVideoBtn" disabled>Analyze Video</button>
+                    <div id="loading" class="loading-spinner" style="display: none;"></div>
+                </div>
+
+                <div id="videoResultContainer" style="display: none; margin-top: 40px; text-align: center;">
+                    <h2>Analysis Result</h2>
+                    <video id="videoResult" controls
+                        style="width: 100%; max-width: 800px; border-radius: 8px; margin-bottom: 20px;"></video>
+                    <br>
+                    <a id="downloadVideoLink" href="#" download class="btn-primary"
+                        style="margin-bottom: 30px;">Download Annotated Video</a>
+                    <div id="priceEstimateContainer" style="display: none; padding-top: 20px; text-align: left;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/script.js?v=3.0"></script>
+</body>
+
+</html>

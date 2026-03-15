@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Select Input Method - AutoInspect AI</title>
+    <link rel="stylesheet" href="/static/style.css?v=3.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .selection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .selection-card {
+            background: white;
+            padding: 2.5rem 2rem;
+            border-radius: 16px;
+            box-shadow: var(--box-shadow);
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .selection-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-color);
+            box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.15);
+        }
+
+        .selection-icon {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .selection-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: var(--text-color);
+        }
+
+        .selection-desc {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .project-context-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .project-context-header h2 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+
+<body class="bg-gray">
+    <nav class="top-nav">
+        <div class="nav-brand">
+            <span class="brand-text">AutoInspect AI</span>
+        </div>
+        <div class="nav-links">
+            <a href="/" class="nav-link">Home</a>
+            <a href="/projects" class="nav-link">View Projects</a>
+            <a href="/create_project" class="nav-btn">Create Project</a>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="project-context-header">
+            <h2 id="projectNameDisplay">Loading Project...</h2>
+            <p id="vehicleDisplay" class="text-muted">Loading vehicle details...</p>
+        </div>
+
+        <div class="section-title" style="margin-bottom: 1rem;">
+            <h3>Select Inspection Method</h3>
+            <p class="text-muted" style="font-weight: normal; font-size: 1rem;">Choose how you want to provide images of
+                the damage.</p>
+        </div>
+
+        <div class="selection-grid">
+            <a id="linkImage" href="#" class="selection-card">
+                <div class="selection-icon">📸</div>
+                <div class="selection-title">Upload Images</div>
+                <div class="selection-desc">Upload up to 5 static images of the vehicle damage for high-precision
+                    inference.</div>
+            </a>
+
+            <a id="linkVideo" href="#" class="selection-card">
+                <div class="selection-icon">🎥</div>
+                <div class="selection-title">Upload Video</div>
+                <div class="selection-desc">Upload a walkaround video. We will process it frame-by-frame.</div>
+            </a>
+
+            <a id="linkWebcam" href="#" class="selection-card">
+                <div class="selection-icon">📹</div>
+                <div class="selection-title">Live Camera</div>
+                <div class="selection-desc">Use your device's camera for real-time augmented reality damage mapping.
+                </div>
+            </a>
+        </div>
+
+        <div class="text-center" style="margin-top: 3rem;">
+            <a href="/projects" class="btn-secondary">Back to Projects</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            let projectId = urlParams.get('project') || localStorage.getItem('current_project');
+
+            if (projectId) {
+                const projects = JSON.parse(localStorage.getItem('autoinspect_projects')) || [];
+                const project = projects.find(p => p.id === projectId);
+
+                if (project) {
+                    document.getElementById('projectNameDisplay').textContent = project.name;
+                    document.getElementById('vehicleDisplay').textContent = `${project.year} ${project.make} ${project.model}`;
+
+                    // Hydrate links with project context
+                    document.getElementById('linkImage').href = `/detection_image?project=${projectId}`;
+                    document.getElementById('linkVideo').href = `/detection_video?project=${projectId}`;
+                    document.getElementById('linkWebcam').href = `/detection_webcam?project=${projectId}`;
+                } else {
+                    alert("Project not found!");
+                    window.location.href = "/projects";
+                }
+            } else {
+                window.location.href = "/projects";
+            }
+        });
+    </script>
+</body>
+
+</html>

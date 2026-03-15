@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Image Analysis - AutoInspect AI</title>
+    <link rel="stylesheet" href="/static/style.css?v=3.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="bg-gray">
+    <nav class="top-nav">
+        <div class="nav-brand">
+            <span class="brand-text">AutoInspect AI</span>
+        </div>
+        <div class="nav-links">
+            <a href="/" class="nav-link">Home</a>
+            <a href="/projects" class="nav-link">View Projects</a>
+            <a href="/create_project" class="nav-btn">Create Project</a>
+        </div>
+    </nav>
+
+    <!-- Context Banner -->
+    <div class="project-banner" id="projectHeader" style="display: none;">
+        <div class="project-info">
+            <h2 id="currentProjectName" style="color: var(--primary-color);"></h2>
+            <p id="currentVehicleInfo" class="vehicle-info"></p>
+        </div>
+    </div>
+
+    <!-- Main Container Layout with Margin spacing -->
+    <div class="main-detection-container">
+        <div class="container" style="max-width: 1200px;">
+            <header>
+                <h1>Image Damage Analysis</h1>
+                <p>Upload clear pictures of the vehicle damage for AI automated estimation.</p>
+                <div style="margin-top: 1rem;">
+                    <a href="/select_input" class="btn-secondary small" id="backToSelectionBtn">Back to Selection</a>
+                </div>
+            </header>
+
+            <div class="input-section" id="imagesSection">
+                <div class="controls-section">
+                    <label for="imageCount">Number of Images (1-5):</label>
+                    <input type="number" id="imageCount" min="1" max="5" value="1">
+                    <button id="generateSlotsBtn" class="small">Generate Slots</button>
+                </div>
+
+                <div class="upload-grid" id="uploadGrid">
+                    <!-- File input cards will be generated here -->
+                </div>
+
+                <div class="action-section">
+                    <button id="analyzeBtn" disabled>Analyze Images</button>
+                </div>
+
+                <div id="loading" class="loading-spinner" style="display: none;"></div>
+
+                <div id="results-section" style="display: none;">
+                    <h2>Analysis Report</h2>
+                    <div id="reportGrid">
+                        <!-- Report cards will be generated here -->
+                    </div>
+                    <div id="priceEstimateContainer" style="display: none; padding-top: 20px;"></div>
+                </div>
+            </div>
+
+            <!-- Fullscreen Image Zoom Container -->
+            <div id="zoomOverlay" class="zoom-overlay" style="display: none;">
+                <img id="zoomImage" class="zoom-image">
+                <span class="zoom-close">&times;</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/script.js?v=3.0"></script>
+</body>
+
+</html>

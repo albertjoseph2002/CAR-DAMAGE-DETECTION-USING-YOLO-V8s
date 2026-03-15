@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>AutoInspect AI | Car Damage Detection</title>
+    <link rel="stylesheet" href="/static/style.css?v=2.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body class="home-page">
+    <nav class="top-nav">
+        <div class="nav-brand">
+            <span class="brand-text">AutoInspect AI</span>
+        </div>
+        <div class="nav-links">
+            <a href="/" class="nav-link active">Home</a>
+            <a href="/projects" class="nav-link">View Projects</a>
+            <a href="/create_project" class="nav-btn">Create Project</a>
+        </div>
+    </nav>
+
+    <div class="hero-container">
+        <div class="hero-content">
+            <h1 class="hero-title">AI-Powered Car Damage Analysis</h1>
+            <p class="hero-subtitle">Instantly detect and analyze vehicle damage using advanced computer vision models.
+                Upload images, analyze videos, or use your webcam for real-time detection.</p>
+
+            <div class="hero-actions">
+                <a href="/create_project" class="btn-primary">Start a New Project</a>
+                <a href="#how-it-works" class="btn-secondary">Learn More</a>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="glass-card visual-mockup">
+                <div class="mockup-header">
+                    <div class="mockup-dot red"></div>
+                    <div class="mockup-dot yellow"></div>
+                    <div class="mockup-dot green"></div>
+                </div>
+                <div class="mockup-body">
+                    <div class="mockup-skeleton banner"></div>
+                    <div class="mockup-skeleton text-lines">
+                        <div class="line"></div>
+                        <div class="line"></div>
+                        <div class="line short"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section id="features" class="section-container">
+        <h2 class="section-title">Core Features</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">📸</div>
+                <h3>Multi-Image Analysis</h3>
+                <p>Upload up to 5 images from different angles to get a comprehensive damage report identifying specific
+                    part damages.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎥</div>
+                <h3>Video Processing</h3>
+                <p>Upload a walkaround video. Our AI will track and identify damages frame-by-frame, outputting a
+                    summarized report.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔴</div>
+                <h3>Live Webcam</h3>
+                <p>Use your device's camera to pan over the vehicle and receive real-time, on-screen bounds of detected
+                    damages.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="how-it-works" class="section-container bg-light">
+        <h2 class="section-title">How It Works</h2>
+        <div class="steps-container">
+            <div class="step">
+                <div class="step-num">1</div>
+                <h3>Create a Project</h3>
+                <p>Enter the project details including the car's make, model, and registration year to keep your
+                    inspections organized.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <h3>Choose Mode</h3>
+                <p>Select your preferred input method: static images, pre-recorded video, or live webcam feed.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <h3>Analyze & Report</h3>
+                <p>Our YOLOv8 model will highlight the damaged areas, giving you bounding boxes and confidence scores.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 AutoInspect AI by Albert Joseph . All rights reserved.</p>
+    </footer>
+</body>
+
+</html>

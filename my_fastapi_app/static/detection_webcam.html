@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Webcam Analysis - AutoInspect AI</title>
+    <link rel="stylesheet" href="/static/style.css?v=3.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="bg-gray">
+    <nav class="top-nav">
+        <div class="nav-brand">
+            <span class="brand-text">AutoInspect AI</span>
+        </div>
+        <div class="nav-links">
+            <a href="/" class="nav-link">Home</a>
+            <a href="/projects" class="nav-link">View Projects</a>
+            <a href="/create_project" class="nav-btn">Create Project</a>
+        </div>
+    </nav>
+
+    <!-- Context Banner -->
+    <div class="project-banner" id="projectHeader" style="display: none;">
+        <div class="project-info">
+            <h2 id="currentProjectName" style="color: var(--primary-color);"></h2>
+            <p id="currentVehicleInfo" class="vehicle-info"></p>
+        </div>
+    </div>
+
+    <!-- Main Container Layout with Margin spacing -->
+    <div class="main-detection-container">
+        <div class="container" style="max-width: 1200px;">
+            <header>
+                <h1>Live Camera Feed</h1>
+                <p>Use your camera to map damages in real-time onto an augmented reality overlay.</p>
+                <div style="margin-top: 1rem;">
+                    <a href="/select_input" class="btn-secondary small" id="backToSelectionBtn">Back to Selection</a>
+                </div>
+            </header>
+
+            <div class="input-section" id="webcamSection">
+                <div class="upload-card" style="max-width: 800px; margin: 0 auto; padding-bottom: 30px;">
+                    <h3>Real-time Damage Mapping</h3>
+                    <p class="text-muted" style="margin-bottom: 20px;">Position the vehicle part clearly in frame.</p>
+
+                    <div
+                        style="position: relative; width: 100%; aspect-ratio: 4/3; background: #000; border-radius: 8px; overflow: hidden; margin-bottom: 20px;">
+                        <video id="webcamVideo" autoplay playsinline
+                            style="width: 100%; height: 100%; object-fit: cover;"></video>
+                        <canvas id="webcamOverlay"
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
+                    </div>
+
+                    <div class="action-section"
+                        style="margin-top: 0; display: flex; gap: 10px; justify-content: center;">
+                        <button id="startWebcamBtn" class="btn-primary">Start Camera</button>
+                        <button id="stopWebcamBtn" class="btn-danger" disabled>Stop Camera</button>
+                        <button id="resetWebcamLogBtn" class="btn-secondary" style="display: none;">Reset Log</button>
+                    </div>
+
+                    <div id="webcamResults"
+                        style="display: none; margin-top: 20px; text-align: left; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <h4 style="margin-top: 0; color: var(--primary-color);">Detected Damage Log</h4>
+                        <ul id="webcamDamageList" class="video-damage-list" style="margin-bottom: 0;">
+                            <!-- Log dynamically populated here -->
+                        </ul>
+                        <div id="priceEstimateContainer" style="display: none; padding-top: 20px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/script.js?v=3.0"></script>
+</body>
+
+</html>

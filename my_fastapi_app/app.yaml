@@ -1,0 +1,22 @@
+path: /content/data
+train: train/images
+val: validation/images
+nc: 13
+
+
+  
+# Classes
+names: 
+  0 : Headlight-Damage
+  1 : RunningBoard-Dent
+  2 : Sidemirror-Damage
+  3 : Taillight-Damage
+  4 : Windscreen-Damage
+  5 : bonnet-dent
+  6 : boot-dent
+  7 : doorouter-dent
+  8 : fender-dent
+  9 : front-bumper-dent
+  10 : quaterpanel-dent
+  11 : rear-bumper-dent
+  12 : roof-dent
