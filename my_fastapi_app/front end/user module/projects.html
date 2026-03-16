@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>View Projects - AutoInspect AI</title>
+    <link rel="stylesheet" href="/static/style.css?v=2.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="bg-gray">
+    <nav class="top-nav">
+        <div class="nav-brand">
+            <span class="brand-text">AutoInspect AI</span>
+        </div>
+        <div class="nav-links">
+            <a href="/home" class="nav-link">Home</a>
+            <a href="/projects" class="nav-link active">View Projects</a>
+            <a href="/create_project" class="nav-btn">Create Project</a>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="dashboard-header flex-between">
+            <h2>Your Inspection Projects</h2>
+            <a href="/create_project" class="btn-primary small">New Project</a>
+        </div>
+
+        <div id="noProjectsMessage" class="empty-state" style="display: none;">
+            <div class="empty-icon">📂</div>
+            <h3>No Projects Found</h3>
+            <p>You haven't created any damage inspection projects yet.</p>
+            <a href="/create_project" class="btn-primary mt-3 inline-block">Create Your First Project</a>
+        </div>
+
+        <div id="projectsGrid" class="projects-grid">
+            <!-- Projects injected here via JS -->
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const projectsGrid = document.getElementById('projectsGrid');
+            const noProjectsMessage = document.getElementById('noProjectsMessage');
+            
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/projects', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    const projects = await response.json();
+                    
+                    if (projects.length === 0) {
+                        noProjectsMessage.style.display = 'block';
+                        return;
+                    }
+
+                    // Sort newest first based on implicit order or add timestamp in model
+                    projects.forEach(project => {
+                        const card = document.createElement('div');
+                        card.className = 'project-card modern-card';
+                        card.innerHTML = `
+                            <div class="project-header">
+                                <h3 class="project-title">${project.year} ${project.make} ${project.model}</h3>
+                                <span class="project-date">ID: ${project.id.slice(-6)}</span>
+                            </div>
+                            <div class="project-details">
+                                <div class="detail-row">
+                                    <span class="detail-label">Vehicle:</span>
+                                    <span class="detail-value">${project.make} ${project.model}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Saved Scans:</span>
+                                    <span class="detail-value">${project.analyzed_images ? project.analyzed_images.length : 0}</span>
+                                </div>
+                            </div>
+                            <div class="project-actions">
+                                <a href="/select_input?project=${project.id}" class="btn-primary small w-full text-center">New Scan</a>
+                                <a href="/project-view?id=${project.id}" class="btn-secondary small w-full text-center">Open Project</a>
+                                <button onclick="deleteProject('${project.id}')" class="btn-danger small w-full" style="padding: 10px;">Delete</button>
+                            </div>
+                        `;
+                        projectsGrid.appendChild(card);
+                    });
+                } else {
+                    console.error("Failed to fetch projects");
+                    noProjectsMessage.style.display = 'block';
+                }
+            } catch (error) {
+                console.error("Error fetching projects", error);
+                noProjectsMessage.style.display = 'block';
+            }
+        });
+        
+        window.deleteProject = async function(id) {
+            if (confirm("Are you sure you want to permanently delete this project?")) {
+                const token = localStorage.getItem('token');
+                try {
+                    const response = await fetch(`/api/projects/${id}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        alert("Failed to delete project");
+                    }
+                } catch(e) {
+                    console.error("Error deleting", e);
+                }
+            }
+        };
+    </script>
+</body>
+
+</html>

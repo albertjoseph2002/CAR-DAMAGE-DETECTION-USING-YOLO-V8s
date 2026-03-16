@@ -20,7 +20,7 @@
             <span class="brand-text">AutoInspect AI</span>
         </div>
         <div class="nav-links">
-            <a href="/" class="nav-link active">Home</a>
+            <a href="/home" class="nav-link active">Home</a>
             <a href="/projects" class="nav-link">View Projects</a>
             <a href="/create_project" class="nav-btn">Create Project</a>
         </div>
@@ -105,7 +105,49 @@
 
     <footer>
         <p>&copy; 2026 AutoInspect AI by Albert Joseph . All rights reserved.</p>
-    </footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+            
+            try {
+                const res = await fetch('/api/users/me', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (res.ok) {
+                    const user = await res.json();
+                    const titleEl = document.querySelector('.hero-title');
+                    titleEl.textContent = `Welcome, ${user.first_name}!`;
+                    
+                    // Change top nav brand
+                    const navBrand = document.querySelector('.brand-text');
+                    navBrand.textContent = `AutoInspect AI / ${user.first_name}`;
+                    
+                    // Add logout button
+                    const navLinks = document.querySelector('.nav-links');
+                    const logoutBtn = document.createElement('a');
+                    logoutBtn.href = '#';
+                    logoutBtn.className = 'nav-link';
+                    logoutBtn.textContent = 'Logout';
+                    logoutBtn.onclick = (e) => {
+                        e.preventDefault();
+                        localStorage.removeItem('token');
+                        window.location.href = '/login';
+                    };
+                    navLinks.appendChild(logoutBtn);
+                } else {
+                    // Invalid token
+                    localStorage.removeItem('token');
+                    window.location.href = '/login';
+                }
+            } catch (e) {
+                console.error('Error fetching user:', e);
+            }
+        });
+    </script>
 </body>
-
 </html>

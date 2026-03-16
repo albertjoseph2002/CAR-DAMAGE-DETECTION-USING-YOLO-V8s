@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoInspect AI | Landing</title>
+    <!-- Use user module styles if possible, else inline crucial for standalone -->
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .full-center {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+        }
+        .landing-title { font-size: 3rem; margin-bottom: 1rem; font-weight: 800; background: linear-gradient(90deg, #38bdf8, #818cf8); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        .landing-desc { font-size: 1.25rem; max-width: 600px; margin-bottom: 2rem; color: #cbd5e1; }
+        .action-row { display: flex; gap: 1rem; }
+        .btn-auth { padding: 0.75rem 2rem; border-radius: 8px; font-weight: 600; text-decoration: none; transition: transform 0.2s; }
+        .btn-signin { background-color: #38bdf8; color: #0f172a; }
+        .btn-signup { background-color: transparent; border: 2px solid #38bdf8; color: #38bdf8; }
+        .btn-auth:hover { transform: translateY(-2px); }
+    </style>
+</head>
+<body style="margin: 0; font-family: 'Inter', sans-serif;">
+    <div class="full-center">
+        <h1 class="landing-title">AutoInspect AI</h1>
+        <p class="landing-desc">
+            Welcome to the AI-Powered Car Damage Analysis system. Instantly detect and analyze vehicle damage using advanced computer vision models. 
+            Identify repairs quickly across images, videos, and live webcam feeds.
+        </p>
+        <div class="action-row">
+            <a href="/login" class="btn-auth btn-signin">Sign In</a>
+            <a href="/signup" class="btn-auth btn-signup">Sign Up</a>
+        </div>
+    </div>
+</body>
+</html>

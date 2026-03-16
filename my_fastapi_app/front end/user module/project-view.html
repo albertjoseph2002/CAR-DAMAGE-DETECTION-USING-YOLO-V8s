@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project View - AutoInspect AI</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .project-header-section { margin-bottom: 2rem; padding: 1.5rem; background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+        .gallery-card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .gallery-img { width: 100%; height: 200px; object-fit: cover; }
+        .gallery-info { padding: 1rem; }
+        .scan-date { font-size: 0.875rem; color: #64748b; margin-bottom: 0.5rem; }
+        .damage-tag { display: inline-block; background: #fee2e2; color: #ef4444; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 500; margin: 0.25rem; }
+        .nav-link { color: #3b82f6; text-decoration: none; font-weight: 500; margin-right: 15px; }
+    </style>
+</head>
+<body class="bg-gray">
+    <nav class="top-nav">
+        <div class="nav-brand">
+            <span class="brand-text">AutoInspect AI</span>
+        </div>
+        <div class="nav-links">
+            <a href="/home" class="nav-link">Home</a>
+            <a href="/projects" class="nav-link">View Projects</a>
+            <a href="/create_project" class="nav-btn">Create Project</a>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <a href="/projects" class="nav-link" style="display:inline-block; margin-bottom:1rem;">&larr; Back to Projects</a>
+        
+        <div class="project-header-section" id="projectHeader">
+            <h2>Loading Project...</h2>
+        </div>
+        
+        <div class="dashboard-header flex-between">
+            <h3>Saved Analyses</h3>
+            <a href="#" id="newScanBtn" class="btn-primary small">Start New Scan</a>
+        </div>
+
+        <div id="noScansMessage" class="empty-state" style="display: none;">
+            <div class="empty-icon">📷</div>
+            <h3>No Scans Yet</h3>
+            <p>You haven't saved any damage analyses to this project.</p>
+        </div>
+
+        <div id="galleryGrid" class="gallery-grid">
+            <!-- Scans injected via JS -->
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const projectId = urlParams.get('id');
+            const token = localStorage.getItem('token');
+            
+            if (!token) { window.location.href = '/login'; return; }
+            if (!projectId) { window.location.href = '/projects'; return; }
+            
+            // Set current project in local storage for the scanner flow
+            localStorage.setItem('current_project', projectId);
+            document.getElementById('newScanBtn').href = `/select_input?project=${projectId}`;
+
+            try {
+                const response = await fetch(`/api/projects/${projectId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    const project = await response.json();
+                    
+                    document.getElementById('projectHeader').innerHTML = `
+                        <h2>${project.year} ${project.make} ${project.model}</h2>
+                        <p style="color: #64748b; margin-top: 0.5rem;">Project ID: ${project.id}</p>
+                    `;
+                    
+                    const gallery = document.getElementById('galleryGrid');
+                    const noScans = document.getElementById('noScansMessage');
+                    
+                    const scans = project.analyzed_images || [];
+                    
+                    if (scans.length === 0) {
+                        noScans.style.display = 'block';
+                    } else {
+                        // Sort newest first
+                        scans.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+                        
+                        scans.forEach(scan => {
+                            const date = new Date(scan.timestamp).toLocaleString();
+                            
+                            // Map damages to their individual estimates, if available
+                            const estArray = scan.estimates?.estimates || [];
+                            
+                            const damagesHtml = scan.damages.map(d => {
+                                let costText = "";
+                                if (estArray.length > 0) {
+                                    // Try to find a matching cost for this specific damage part
+                                    const matchingEstimate = estArray.find(est => 
+                                        est.part.toLowerCase().includes(d.toLowerCase()) || 
+                                        d.toLowerCase().includes(est.part.toLowerCase())
+                                    );
+                                    if (matchingEstimate && matchingEstimate.cost) {
+                                        costText = ` - ${matchingEstimate.cost}`;
+                                    }
+                                }
+                                return `<span class="damage-tag">${d}${costText}</span>`;
+                            }).join('');
+                            
+                            const estTotal = scan.estimates?.total || 'N/A';
+                            
+                            const card = document.createElement('div');
+                            card.className = 'gallery-card';
+                            card.innerHTML = `
+                                <img src="${scan.image_path}" class="gallery-img" alt="Scan Image" onerror="this.src='/static/fallback.jpg'">
+                                <div class="gallery-info">
+                                    <div class="scan-date">${date}</div>
+                                    <div style="margin-bottom: 0.5rem;"><strong>Damages:</strong> <br/> ${damagesHtml || 'None detected'}</div>
+                                    <div><strong>Est. Total Cost:</strong> ${estTotal}</div>
+                                </div>
+                            `;
+                            gallery.appendChild(card);
+                        });
+                    }
+                } else {
+                    document.getElementById('projectHeader').innerHTML = `<h2>Project Not Found</h2>`;
+                }
+            } catch (error) {
+                console.error("Error fetching project", error);
+            }
+        });
+    </script>
+</body>
+</html>

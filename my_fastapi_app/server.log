@@ -1,0 +1,3 @@
+INFO:     Will watch for changes in these directories: ['D:\\MAIN PROJECT\\FORTH TRY (SAMLL MODEL)\\Damaged-Car-parts-prediction-using-YOLOv8\\my_fastapi_app']
+INFO:     Uvicorn running on http://127.0.0.1:8080 (Press CTRL+C to quit)
+INFO:     Started reloader process [25604] using WatchFiles

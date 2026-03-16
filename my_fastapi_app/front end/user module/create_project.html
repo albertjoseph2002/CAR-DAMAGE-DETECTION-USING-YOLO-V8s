@@ -20,7 +20,7 @@
             <span class="brand-text">AutoInspect AI</span>
         </div>
         <div class="nav-links">
-            <a href="/" class="nav-link">Home</a>
+            <a href="/home" class="nav-link">Home</a>
             <a href="/projects" class="nav-link">View Projects</a>
             <a href="/create_project" class="nav-btn active">Create Project</a>
         </div>
@@ -65,37 +65,48 @@
     </div>
 
     <script>
-        document.getElementById('createProjectForm').addEventListener('submit', function (e) {
+        document.getElementById('createProjectForm').addEventListener('submit', async function (e) {
             e.preventDefault();
 
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+
             // Get values
-            const projectName = document.getElementById('projectName').value;
             const carMake = document.getElementById('carMake').value;
             const carName = document.getElementById('carName').value;
             const carYear = document.getElementById('carYear').value;
 
-            // Generate unique ID
-            const projectId = 'proj_' + Date.now();
-
-            // Create project object
-            const project = {
-                id: projectId,
-                name: projectName,
+            const projectData = {
                 make: carMake,
                 model: carName,
-                year: carYear,
-                dateCreated: new Date().toISOString(),
-                // could add status or other metadata here
+                year: carYear
             };
 
-            // Save to LocalStorage
-            let projects = JSON.parse(localStorage.getItem('autoinspect_projects')) || [];
-            projects.push(project);
-            localStorage.setItem('autoinspect_projects', JSON.stringify(projects));
+            try {
+                const response = await fetch('/api/projects', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(projectData)
+                });
 
-            // Set as current project and redirect
-            localStorage.setItem('current_project', projectId);
-            window.location.href = `/select_input?project=${projectId}`;
+                if (response.ok) {
+                    const result = await response.json();
+                    localStorage.setItem('current_project', result.id);
+                    window.location.href = `/select_input?project=${result.id}`;
+                } else {
+                    console.error("Failed to create project.");
+                    alert("Failed to create project. Please try again.");
+                }
+            } catch (error) {
+                console.error("Error creating project:", error);
+                alert("Server connection error.");
+            }
         });
     </script>
 </body>

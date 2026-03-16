@@ -19,6 +19,8 @@ from detection import Detection
 import google.generativeai as genai
 import json
 import os
+from routers.auth import router as auth_router, user_router
+from routers.projects import router as projects_router
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -82,36 +84,60 @@ detection = Detection(
 
 app = FastAPI()
 
+app.include_router(auth_router)
+app.include_router(user_router)
+app.include_router(projects_router)
+
 # Mount static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory="front end/user module"), name="static")
 
 @app.get("/")
 async def read_index():
-    return FileResponse('static/home.html')
+    return FileResponse('front end/index.html')
+
+@app.get("/login")
+async def read_login():
+    return FileResponse('front end/login.html')
+
+@app.get("/signup")
+async def read_signup():
+    return FileResponse('front end/signup.html')
+
+@app.get("/user-module")
+async def read_user_module():
+    return FileResponse('front end/user module/home.html')
 
 @app.get("/select_input")
 async def read_select_input():
-    return FileResponse('static/select_input.html')
+    return FileResponse('front end/user module/select_input.html')
 
 @app.get("/detection_image")
 async def read_detection_image():
-    return FileResponse('static/detection_image.html')
+    return FileResponse('front end/user module/detection_image.html')
 
 @app.get("/detection_video")
 async def read_detection_video():
-    return FileResponse('static/detection_video.html')
+    return FileResponse('front end/user module/detection_video.html')
 
 @app.get("/detection_webcam")
 async def read_detection_webcam():
-    return FileResponse('static/detection_webcam.html')
+    return FileResponse('front end/user module/detection_webcam.html')
+
+@app.get("/home")
+async def read_home():
+    return FileResponse('front end/user module/home.html')
+
+@app.get("/project-view")
+async def read_project_view():
+    return FileResponse('front end/user module/project-view.html')
 
 @app.get("/create_project")
 async def read_create_project():
-    return FileResponse('static/create_project.html')
+    return FileResponse('front end/user module/create_project.html')
 
 @app.get("/projects")
 async def read_projects():
-    return FileResponse('static/projects.html')
+    return FileResponse('front end/user module/projects.html')
 
 @app.post('/detection')
 def post_detection(file: bytes = File(...)):
@@ -151,14 +177,14 @@ async def analyze_car(files: List[UploadFile] = File(...)):
 async def analyze_video(file: UploadFile = File(...)):
     try:
         # Create temp directory for videos
-        os.makedirs("static/videos", exist_ok=True)
+        os.makedirs("front end/user module/videos", exist_ok=True)
         
         # Use .webm for better browser compatibility (VP8 codec)
         base_name = os.path.splitext(file.filename)[0]
         output_filename = f"output_{base_name}.webm"
-        output_video_path = f"static/videos/{output_filename}"
+        output_video_path = f"front end/user module/videos/{output_filename}"
         
-        input_video_path = f"static/videos/input_{file.filename}"
+        input_video_path = f"front end/user module/videos/input_{file.filename}"
         
         with open(input_video_path, "wb") as buffer:
             buffer.write(await file.read())
@@ -182,7 +208,7 @@ async def analyze_video(file: UploadFile = File(...)):
             print("VP80 codec init failed")
             fourcc = cv2.VideoWriter_fourcc(*'mp4v')
             output_filename = f"output_{base_name}.mp4"
-            output_video_path = f"static/videos/{output_filename}"
+            output_video_path = f"front end/user module/videos/{output_filename}"
 
         out = cv2.VideoWriter(output_video_path, fourcc, fps, (width, height))
         if not out.isOpened():
@@ -190,7 +216,7 @@ async def analyze_video(file: UploadFile = File(...)):
              print("VideoWriter failed to open with VP80. Trying mp4v fallback.")
              fourcc = cv2.VideoWriter_fourcc(*'mp4v')
              output_filename = f"output_{base_name}.mp4"
-             output_video_path = f"static/videos/{output_filename}"
+             output_video_path = f"front end/user module/videos/{output_filename}"
              out = cv2.VideoWriter(output_video_path, fourcc, fps, (width, height))
              if not out.isOpened():
                  raise HTTPException(status_code=500, detail="Could not initialize VideoWriter")

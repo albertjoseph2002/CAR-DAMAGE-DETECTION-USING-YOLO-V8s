@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up | AutoInspect AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { margin: 0; font-family: 'Inter', sans-serif; background: #f8fafc; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 2rem; box-sizing: border-box; }
+        .auth-card { background: white; padding: 2.5rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); width: 100%; max-width: 400px; }
+        .title { font-size: 1.5rem; font-weight: 700; color: #0f172a; margin-bottom: 0.5rem; text-align: center; }
+        .subtitle { color: #64748b; text-align: center; margin-bottom: 2rem; font-size: 0.875rem; }
+        .form-group { margin-bottom: 1.25rem; }
+        label { display: block; font-size: 0.875rem; font-weight: 500; color: #334155; margin-bottom: 0.5rem; }
+        input { width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-family: inherit; }
+        input:focus { outline: none; border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1); }
+        .row { display: flex; gap: 1rem; }
+        .row .form-group { flex: 1; }
+        .btn-submit { width: 100%; background: #0f172a; color: white; padding: 0.75rem; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; margin-top: 0.5rem; }
+        .btn-submit:hover { background: #1e293b; }
+        .footer-link { text-align: center; margin-top: 1.5rem; font-size: 0.875rem; color: #64748b; }
+        .footer-link a { color: #38bdf8; text-decoration: none; font-weight: 500; }
+    </style>
+</head>
+<body>
+    <div class="auth-card">
+        <h1 class="title">Create an Account</h1>
+        <p class="subtitle">Join AutoInspect AI today</p>
+        <form id="signupForm">
+            <div class="row">
+                <div class="form-group">
+                    <label for="fname">First Name</label>
+                    <input type="text" id="fname" name="first_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="lname">Last Name</label>
+                    <input type="text" id="lname" name="last_name" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <div id="error-msg" style="color: red; font-size: 0.875rem; margin-bottom: 1rem; text-align: center; display: none;"></div>
+            <button type="submit" class="btn-submit">Sign Up</button>
+        </form>
+        <div class="footer-link">
+            Already have an account? <a href="/login">Sign in</a>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            const errorMsg = document.getElementById('error-msg');
+            
+            try {
+                const response = await fetch('/api/auth/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const responseData = await response.json();
+                
+                if (response.ok) {
+                    // Successful signup, redirect to login
+                    window.location.href = '/login';
+                } else {
+                    errorMsg.textContent = responseData.detail || 'Signup failed';
+                    errorMsg.style.display = 'block';
+                }
+            } catch (err) {
+                errorMsg.textContent = 'Server connection error';
+                errorMsg.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

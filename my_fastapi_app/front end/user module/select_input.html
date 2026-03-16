@@ -79,7 +79,7 @@
             <span class="brand-text">AutoInspect AI</span>
         </div>
         <div class="nav-links">
-            <a href="/" class="nav-link">Home</a>
+            <a href="/home" class="nav-link">Home</a>
             <a href="/projects" class="nav-link">View Projects</a>
             <a href="/create_project" class="nav-btn">Create Project</a>
         </div>
@@ -125,24 +125,40 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
             let projectId = urlParams.get('project') || localStorage.getItem('current_project');
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                 window.location.href = '/login';
+                 return;
+            }
 
             if (projectId) {
-                const projects = JSON.parse(localStorage.getItem('autoinspect_projects')) || [];
-                const project = projects.find(p => p.id === projectId);
+                try {
+                    const response = await fetch(`/api/projects/${projectId}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (response.ok) {
+                        const project = await response.json();
+                        
+                        // Handle backward compatibility or display logic
+                        const projectName = project.name || `${project.year} ${project.make} ${project.model}`;
+                        document.getElementById('projectNameDisplay').textContent = projectName;
+                        document.getElementById('vehicleDisplay').textContent = `${project.year} ${project.make} ${project.model}`;
 
-                if (project) {
-                    document.getElementById('projectNameDisplay').textContent = project.name;
-                    document.getElementById('vehicleDisplay').textContent = `${project.year} ${project.make} ${project.model}`;
-
-                    // Hydrate links with project context
-                    document.getElementById('linkImage').href = `/detection_image?project=${projectId}`;
-                    document.getElementById('linkVideo').href = `/detection_video?project=${projectId}`;
-                    document.getElementById('linkWebcam').href = `/detection_webcam?project=${projectId}`;
-                } else {
-                    alert("Project not found!");
+                        // Hydrate links with project context
+                        document.getElementById('linkImage').href = `/detection_image?project=${projectId}`;
+                        document.getElementById('linkVideo').href = `/detection_video?project=${projectId}`;
+                        document.getElementById('linkWebcam').href = `/detection_webcam?project=${projectId}`;
+                    } else {
+                        alert("Project not found!");
+                        window.location.href = "/projects";
+                    }
+                } catch(error) {
+                    console.error("Error loading project:", error);
                     window.location.href = "/projects";
                 }
             } else {

@@ -9,28 +9,35 @@ const zoomOverlay = document.getElementById('zoomOverlay');
 const zoomImage = document.getElementById('zoomImage');
 
 // --- Project Initialization ---
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     let projectId = urlParams.get('project');
+    const token = localStorage.getItem('token');
 
     if (!projectId) {
         projectId = localStorage.getItem('current_project');
     }
 
-    if (projectId) {
-        const projects = JSON.parse(localStorage.getItem('autoinspect_projects')) || [];
-        const project = projects.find(p => p.id === projectId);
+    if (projectId && token) {
+        try {
+            const response = await fetch(`/api/projects/${projectId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if (response.ok) {
+                const project = await response.json();
+                const header = document.getElementById('projectHeader');
+                const nameEl = document.getElementById('currentProjectName');
+                const infoEl = document.getElementById('currentVehicleInfo');
 
-        if (project) {
-            const header = document.getElementById('projectHeader');
-            const nameEl = document.getElementById('currentProjectName');
-            const infoEl = document.getElementById('currentVehicleInfo');
-
-            if (header && nameEl && infoEl) {
-                nameEl.textContent = project.name;
-                infoEl.textContent = `${project.year} ${project.make} ${project.model}`;
-                header.style.display = 'block';
+                if (header && nameEl && infoEl) {
+                    nameEl.textContent = project.name || `${project.year} ${project.make} ${project.model}`;
+                    infoEl.textContent = `${project.year} ${project.make} ${project.model}`;
+                    header.style.display = 'block';
+                }
             }
+        } catch(error) {
+            console.error("Error fetching project context:", error);
         }
     }
 });
@@ -167,9 +174,8 @@ if (analyzeBtn) {
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
             const report = await response.json();
-            await generateReport(report);
 
-            // Fetch auto parts price estimation
+            // Fetch auto parts price estimation FIRST
             let allDetectedClasses = new Set();
             for (let i = 0; i < currentFileCount; i++) {
                 const key = `Image ${i + 1}`;
@@ -177,9 +183,13 @@ if (analyzeBtn) {
                     report[key].classes.forEach(c => allDetectedClasses.add(c));
                 }
             }
+            
+            let estimateData = null;
             if (allDetectedClasses.size > 0) {
-                await fetchAndDisplayPriceEstimate(Array.from(allDetectedClasses));
+                estimateData = await fetchAndDisplayPriceEstimate(Array.from(allDetectedClasses));
             }
+
+            await generateReport(report, estimateData);
 
         } catch (error) {
             console.error('Error:', error);
@@ -194,8 +204,12 @@ if (analyzeBtn) {
 // ... Report generation & Helper functions (generateReport, drawBoxes, createReportImage, createReportCard) ...
 // (Reusing existing helper functions here, copy-pasting for completeness)
 
-async function generateReport(report) {
+async function generateReport(report, estimateData = null) {
     reportGrid.innerHTML = '';
+    const projectId = localStorage.getItem('current_project');
+    const token = localStorage.getItem('token');
+    let savedToProject = false;
+    
     for (let i = 0; i < currentFileCount; i++) {
         const key = `Image ${i + 1}`;
         const inputId = `img${i}`;
@@ -204,6 +218,25 @@ async function generateReport(report) {
             const reportImageSrc = await createReportImage(inputId, report[key]);
             const card = createReportCard(key, report[key], reportImageSrc);
             reportGrid.appendChild(card);
+            
+            // Save to Backend if in a project
+            if (projectId && token) {
+                try {
+                   await fetch(`/api/projects/${projectId}/save_analysis`, {
+                       method: 'POST',
+                       headers: {
+                           'Content-Type': 'application/json',
+                           'Authorization': `Bearer ${token}`
+                       },
+                       body: JSON.stringify({
+                           image_path: reportImageSrc, // base64 string
+                           damages: report[key].classes,
+                           estimates: estimateData || {} // Can be updated if cost is merged per image
+                       })
+                   });
+                   savedToProject = true;
+                } catch(e) { console.error("Could not save analysis", e); }
+            }
 
             const imgContainer = card.querySelector('.report-image-container');
             const img = card.querySelector('.report-image');
@@ -213,6 +246,18 @@ async function generateReport(report) {
             });
         }
     }
+    
+    if (savedToProject) {
+       const alertBox = document.createElement('div');
+       alertBox.style.padding = '10px';
+       alertBox.style.backgroundColor = '#d1fae5';
+       alertBox.style.color = '#065f46';
+       alertBox.style.borderRadius = '6px';
+       alertBox.style.marginBottom = '15px';
+       alertBox.innerText = 'Analysis automatically saved to your Project history!';
+       resultsSection.prepend(alertBox);
+    }
+    
     resultsSection.style.display = 'block';
 }
 
@@ -569,14 +614,20 @@ async function fetchAndDisplayPriceEstimate(detectedDamages) {
     let year = "Unknown";
 
     const projectId = localStorage.getItem('current_project');
-    if (projectId) {
-        const projects = JSON.parse(localStorage.getItem('autoinspect_projects')) || [];
-        const project = projects.find(p => p.id === projectId);
-        if (project) {
-            make = project.make;
-            model = project.model;
-            year = project.year;
-        }
+    const token = localStorage.getItem('token');
+    
+    if (projectId && token) {
+        try {
+            const response = await fetch(`/api/projects/${projectId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (response.ok) {
+                const project = await response.json();
+                make = project.make;
+                model = project.model;
+                year = project.year;
+            }
+        } catch(e) { console.error("Could not load project for pricing", e); }
     }
 
     try {
@@ -631,8 +682,10 @@ async function fetchAndDisplayPriceEstimate(detectedDamages) {
             container.style.display = 'none';
         }
 
+        return data;
     } catch (error) {
         console.error("Price estimation error:", error);
         container.innerHTML = '<p class="text-center text-red-500">Failed to load price estimates.</p>';
+        return null;
     }
 }
