@@ -16,6 +16,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (!projectId) {
         projectId = localStorage.getItem('current_project');
+    } else {
+        localStorage.setItem('current_project', projectId);
     }
 
     if (projectId && token) {
@@ -222,7 +224,7 @@ async function generateReport(report, estimateData = null) {
             // Save to Backend if in a project
             if (projectId && token) {
                 try {
-                   await fetch(`/api/projects/${projectId}/save_analysis`, {
+                   const response = await fetch(`/api/projects/${projectId}/save_analysis`, {
                        method: 'POST',
                        headers: {
                            'Content-Type': 'application/json',
@@ -230,11 +232,18 @@ async function generateReport(report, estimateData = null) {
                        },
                        body: JSON.stringify({
                            image_path: reportImageSrc, // base64 string
-                           damages: report[key].classes,
+                           damages: report[key].classes || [],
                            estimates: estimateData || {} // Can be updated if cost is merged per image
                        })
                    });
-                   savedToProject = true;
+                   
+                   if (response.ok) {
+                       savedToProject = true;
+                   } else {
+                       const err = await response.text();
+                       console.error("Save analysis failed:", response.status, err);
+                       alert("Failed to save analysis for " + key + ": " + err);
+                   }
                 } catch(e) { console.error("Could not save analysis", e); }
             }
 
@@ -336,7 +345,8 @@ function createReportImage(elementIdPrefix, data) {
             });
         }
 
-        resolve(tempCanvas.toDataURL('image/jpeg'));
+        // Strongly compress the JPEG to avoid hitting database limits (MongoDB 16MB limit)
+        resolve(tempCanvas.toDataURL('image/jpeg', 0.5));
     });
 }
 
