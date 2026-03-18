@@ -66,6 +66,9 @@ let uploadedFiles = {};
 let webcamStream = null;
 let webcamInterval = null;
 let webcamDetectedDamages = new Set();
+let mediaRecorder = null;
+let recordedChunks = [];
+let currentWebcamEstimates = null;
 
 // ================= IMAGES LOGIC =================
 
@@ -524,12 +527,67 @@ function resetWebcamLog() {
     if (resetWebcamLogBtn) resetWebcamLogBtn.style.display = 'none';
 }
 
+let recordingCanvas = null;
+let recordingCtx = null;
+let webcamAnimationFrame = null;
+
+function renderWebcamFrame() {
+    if (!webcamVideo || !webcamVideo.videoWidth || !webcamStream) {
+        webcamAnimationFrame = requestAnimationFrame(renderWebcamFrame);
+        return;
+    }
+
+    if (!recordingCanvas) {
+        recordingCanvas = document.createElement('canvas');
+        recordingCtx = recordingCanvas.getContext('2d');
+    }
+
+    if (recordingCanvas.width !== webcamVideo.videoWidth || recordingCanvas.height !== webcamVideo.videoHeight) {
+        recordingCanvas.width = webcamVideo.videoWidth;
+        recordingCanvas.height = webcamVideo.videoHeight;
+    }
+
+    recordingCtx.drawImage(webcamVideo, 0, 0, recordingCanvas.width, recordingCanvas.height);
+    recordingCtx.drawImage(webcamOverlay, 0, 0, recordingCanvas.width, recordingCanvas.height);
+
+    webcamAnimationFrame = requestAnimationFrame(renderWebcamFrame);
+}
+
 async function startWebcam() {
     try {
-        webcamStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        webcamStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
         webcamVideo.srcObject = webcamStream;
         startWebcamBtn.disabled = true;
         stopWebcamBtn.disabled = false;
+
+        recordedChunks = [];
+        currentWebcamEstimates = null;
+
+        const startRecordingProcess = () => {
+            if (!recordingCanvas) {
+                recordingCanvas = document.createElement('canvas');
+                recordingCtx = recordingCanvas.getContext('2d');
+            }
+            recordingCanvas.width = webcamVideo.videoWidth;
+            recordingCanvas.height = webcamVideo.videoHeight;
+
+            renderWebcamFrame();
+            
+            const canvasStream = recordingCanvas.captureStream(30);
+            mediaRecorder = new MediaRecorder(canvasStream);
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data && event.data.size > 0) {
+                    recordedChunks.push(event.data);
+                }
+            };
+            mediaRecorder.start();
+        };
+
+        if (webcamVideo.readyState >= 1) {
+            startRecordingProcess();
+        } else {
+            webcamVideo.onloadedmetadata = startRecordingProcess;
+        }
 
         // Start detection loop
         webcamInterval = setInterval(captureAndDetect, 500); // 2 FPS to reduce load
@@ -539,22 +597,107 @@ async function startWebcam() {
     }
 }
 
-function stopWebcam() {
-    if (webcamStream) {
-        webcamStream.getTracks().forEach(track => track.stop());
-        webcamVideo.srcObject = null;
-        webcamStream = null;
-    }
+async function stopWebcam() {
     if (webcamInterval) {
         clearInterval(webcamInterval);
         webcamInterval = null;
     }
+
+    if (webcamAnimationFrame) {
+        cancelAnimationFrame(webcamAnimationFrame);
+        webcamAnimationFrame = null;
+    }
+
+    const saveAndStopTracks = async () => {
+        if (webcamStream) {
+            webcamStream.getTracks().forEach(track => track.stop());
+            webcamVideo.srcObject = null;
+            webcamStream = null;
+        }
+
+        // Handle saving
+        if (webcamDetectedDamages.size > 0 && recordedChunks.length > 0) {
+            const blob = new Blob(recordedChunks, { type: 'video/webm' });
+            await saveWebcamRecording(blob);
+        }
+    };
+
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.onstop = saveAndStopTracks;
+        mediaRecorder.stop();
+    } else {
+        await saveAndStopTracks();
+    }
+
     startWebcamBtn.disabled = false;
     stopWebcamBtn.disabled = true;
 
     // Clear overlay only, keep detection log
     const ctx = webcamOverlay.getContext('2d');
     ctx.clearRect(0, 0, webcamOverlay.width, webcamOverlay.height);
+}
+
+async function saveWebcamRecording(blob) {
+    if (window.loading) loading.style.display = 'block';
+    try {
+        const formData = new FormData();
+        formData.append('file', blob, 'webcam_record.webm');
+
+        const uploadRes = await fetch('/upload_webcam_video', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!uploadRes.ok) throw new Error("Failed to upload webcam video");
+        const data = await uploadRes.json();
+        
+        const projectId = localStorage.getItem('current_project');
+        const token = localStorage.getItem('token');
+        if (projectId && token) {
+            const saveRes = await fetch(`/api/projects/${projectId}/save_analysis`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    image_path: data.video_url,
+                    media_type: 'video',
+                    damages: Array.from(webcamDetectedDamages),
+                    estimates: currentWebcamEstimates || {}
+                })
+            });
+
+            if (saveRes.ok) {
+                const resultsContainer = document.getElementById('webcamResults');
+                if (resultsContainer) {
+                    const oldAlert = document.getElementById('webcamSaveAlert');
+                    if (oldAlert) oldAlert.remove();
+                    
+                    const alertBox = document.createElement('div');
+                    alertBox.id = 'webcamSaveAlert';
+                    alertBox.style.padding = '10px';
+                    alertBox.style.backgroundColor = '#d1fae5';
+                    alertBox.style.color = '#065f46';
+                    alertBox.style.borderRadius = '6px';
+                    alertBox.style.marginBottom = '15px';
+                    alertBox.style.marginTop = '15px';
+                    alertBox.innerText = 'Webcam footage automatically saved to your Project history!';
+                    resultsContainer.prepend(alertBox);
+                } else {
+                    alert("Webcam footage saved to project!");
+                }
+            } else {
+                console.error("Failed to save webcam analysis:", await saveRes.text());
+                alert("Failed to save webcam analysis to project.");
+            }
+        }
+    } catch (e) {
+        console.error("Error saving webcam recording:", e);
+        alert("Failed to save webcam recording.");
+    } finally {
+        if (window.loading) loading.style.display = 'none';
+    }
 }
 
 async function captureAndDetect() {
@@ -702,6 +845,7 @@ async function fetchAndDisplayPriceEstimate(detectedDamages) {
         if (!response.ok) throw new Error('Failed to fetch price estimate');
 
         const data = await response.json();
+        currentWebcamEstimates = data;
 
         if (data.estimates && data.estimates.length > 0) {
             let html = `

@@ -281,6 +281,23 @@ async def analyze_video(file: UploadFile = File(...)):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/upload_webcam_video")
+async def upload_webcam_video(file: UploadFile = File(...)):
+    try:
+        import uuid
+        os.makedirs("front end/user module/videos", exist_ok=True)
+        unique_id = str(uuid.uuid4())[:8]
+        output_filename = f"webcam_{unique_id}.webm"
+        output_video_path = f"front end/user module/videos/{output_filename}"
+        
+        with open(output_video_path, "wb") as buffer:
+             buffer.write(await file.read())
+             
+        return {"video_url": f"/static/videos/{output_filename}"}
+    except Exception as e:
+        print(f"Error saving webcam video: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/estimate_prices")
 async def estimate_prices(payload: dict = Body(...)):
     try:
