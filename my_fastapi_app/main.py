@@ -139,6 +139,10 @@ async def read_create_project():
 async def read_projects():
     return FileResponse('front end/user module/projects.html')
 
+@app.get("/generate_report")
+async def read_generate_report():
+    return FileResponse('front end/user module/generate_report.html')
+
 @app.post('/detection')
 def post_detection(file: bytes = File(...)):
    image = Image.open(io.BytesIO(file)).convert("RGB")
@@ -296,6 +300,23 @@ async def upload_webcam_video(file: UploadFile = File(...)):
         return {"video_url": f"/static/videos/{output_filename}"}
     except Exception as e:
         print(f"Error saving webcam video: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/upload_pdf_report")
+async def upload_pdf_report(file: UploadFile = File(...)):
+    try:
+        import uuid
+        os.makedirs("front end/user module/reports", exist_ok=True)
+        unique_id = str(uuid.uuid4())[:8]
+        output_filename = f"report_{unique_id}.pdf"
+        output_path = f"front end/user module/reports/{output_filename}"
+        
+        with open(output_path, "wb") as buffer:
+             buffer.write(await file.read())
+             
+        return {"pdf_url": f"/static/reports/{output_filename}"}
+    except Exception as e:
+        print(f"Error saving PDF report: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/estimate_prices")
