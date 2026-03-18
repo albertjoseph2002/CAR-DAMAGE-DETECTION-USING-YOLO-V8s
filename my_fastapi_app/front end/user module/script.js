@@ -445,9 +445,54 @@ if (videoUpload) {
 
             videoResultContainer.style.display = 'block';
 
-            if (data.damage_summary && data.damage_summary.length > 0) {
-                const detectedDamages = data.damage_summary.map(item => item.label);
-                await fetchAndDisplayPriceEstimate(detectedDamages);
+            let estimateData = null;
+            const detectedDamages = (data.damage_summary || []).map(item => item.label);
+            if (detectedDamages.length > 0) {
+                estimateData = await fetchAndDisplayPriceEstimate(detectedDamages);
+            }
+
+            const projectId = localStorage.getItem('current_project');
+            const token = localStorage.getItem('token');
+            if (projectId && token) {
+                try {
+                    const response = await fetch(`/api/projects/${projectId}/save_analysis`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            image_path: data.video_url,
+                            media_type: 'video',
+                            damages: detectedDamages,
+                            estimates: estimateData || {}
+                        })
+                    });
+                    
+                    if (response.ok) {
+                       // Remove any old alert before showing a new one
+                       const oldAlert = document.getElementById('videoSaveAlert');
+                       if (oldAlert) oldAlert.remove();
+                       
+                       const alertBox = document.createElement('div');
+                       alertBox.id = 'videoSaveAlert';
+                       alertBox.style.padding = '10px';
+                       alertBox.style.backgroundColor = '#d1fae5';
+                       alertBox.style.color = '#065f46';
+                       alertBox.style.borderRadius = '6px';
+                       alertBox.style.marginBottom = '15px';
+                       alertBox.style.marginTop = '15px';
+                       alertBox.innerText = 'Video Analysis automatically saved to your Project history!';
+                       videoResultContainer.prepend(alertBox);
+                    } else {
+                        const errText = await response.text();
+                        console.error("Failed to save video analysis:", response.status, errText);
+                        alert("Failed to save video analysis: " + errText);
+                    }
+                } catch(e) { 
+                    console.error("Could not save video analysis. Network or parsing error:", e); 
+                    alert("Could not save video analysis. Check console.");
+                }
             }
 
         } catch (error) {

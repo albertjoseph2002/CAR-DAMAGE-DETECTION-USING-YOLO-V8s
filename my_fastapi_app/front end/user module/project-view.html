@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Project View - AutoInspect AI</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/style.css?v=4.0">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         .project-header-section { margin-bottom: 2rem; padding: 1.5rem; background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
@@ -114,8 +114,16 @@
                             
                             const card = document.createElement('div');
                             card.className = 'gallery-card';
+                            
+                            let mediaHtml = '';
+                            if (scan.media_type === 'video') {
+                                mediaHtml = `<video src="${scan.image_path}" class="gallery-img" controls style="background-color: #000;"></video>`;
+                            } else {
+                                mediaHtml = `<img src="${scan.image_path}" class="gallery-img" alt="Scan Image" onerror="this.src='/static/fallback.jpg'">`;
+                            }
+
                             card.innerHTML = `
-                                <img src="${scan.image_path}" class="gallery-img" alt="Scan Image" onerror="this.src='/static/fallback.jpg'">
+                                ${mediaHtml}
                                 <div class="gallery-info">
                                     <div class="scan-date">${date}</div>
                                     <div style="margin-bottom: 0.5rem;"><strong>Damages:</strong> <br/> ${damagesHtml || 'None detected'}</div>

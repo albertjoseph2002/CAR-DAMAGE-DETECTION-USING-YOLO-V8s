@@ -25,6 +25,7 @@ class ProjectCreate(BaseModel):
 
 class ProjectAnalysisSave(BaseModel):
     image_path: str
+    media_type: str = "image"
     damages: List[str]
     estimates: dict
     timestamp: datetime = Field(default_factory=datetime.utcnow)
