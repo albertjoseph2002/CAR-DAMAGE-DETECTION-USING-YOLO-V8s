@@ -76,3 +76,26 @@ async def save_project_analysis(project_id: str, analysis: ProjectAnalysisSave, 
     )
     
     return {"status": "success", "message": "Analysis saved to project"}
+
+@router.delete("/{project_id}/analysis/{index}")
+async def delete_project_analysis(project_id: str, index: int, current_user: dict = Depends(get_current_user)):
+    try:
+        project = await db.projects.find_one({"_id": ObjectId(project_id), "user_id": current_user["id"]})
+    except:
+        raise HTTPException(status_code=400, detail="Invalid project ID")
+        
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    # To delete by index in an array, we first unset the element at that index, then pull nulls.
+    await db.projects.update_one(
+        {"_id": ObjectId(project_id)},
+        {"$unset": {f"analyzed_images.{index}": 1}}
+    )
+    
+    await db.projects.update_one(
+        {"_id": ObjectId(project_id)},
+        {"$pull": {"analyzed_images": None}}
+    )
+    
+    return {"status": "success", "message": "Analysis deleted"}
