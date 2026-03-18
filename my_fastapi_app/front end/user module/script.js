@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (header && nameEl && infoEl) {
                     nameEl.textContent = project.name || `${project.year} ${project.make} ${project.model}`;
-                    infoEl.textContent = `${project.year} ${project.make} ${project.model}`;
+                    infoEl.textContent = `${project.year} ${project.make} ${project.model} | Plate: ${project.number_plate || 'N/A'}`;
                     header.style.display = 'block';
                 }
             }

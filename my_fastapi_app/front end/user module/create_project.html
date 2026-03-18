@@ -50,10 +50,17 @@
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="carYear">Year Registered</label>
-                    <input type="number" id="carYear" name="carYear" min="1900" max="2030" placeholder="e.g., 2022"
-                        required>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="carYear">Year Registered</label>
+                        <input type="number" id="carYear" name="carYear" min="1900" max="2030" placeholder="e.g., 2022"
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="numberPlate">Number Plate</label>
+                        <input type="text" id="numberPlate" name="numberPlate" placeholder="e.g., MH12AB1234" required>
+                    </div>
                 </div>
 
                 <div class="form-actions">
@@ -78,11 +85,13 @@
             const carMake = document.getElementById('carMake').value;
             const carName = document.getElementById('carName').value;
             const carYear = document.getElementById('carYear').value;
+            const numberPlate = document.getElementById('numberPlate').value;
 
             const projectData = {
                 make: carMake,
                 model: carName,
-                year: carYear
+                year: carYear,
+                number_plate: numberPlate
             };
 
             try {

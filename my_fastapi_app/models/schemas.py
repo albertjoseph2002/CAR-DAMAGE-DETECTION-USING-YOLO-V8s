@@ -22,6 +22,7 @@ class ProjectCreate(BaseModel):
     make: str
     model: str
     year: str
+    number_plate: str
 
 class ProjectAnalysisSave(BaseModel):
     image_path: str
