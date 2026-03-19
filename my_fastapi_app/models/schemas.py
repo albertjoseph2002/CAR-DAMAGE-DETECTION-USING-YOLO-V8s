@@ -17,6 +17,7 @@ class UserResponse(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+    role: str = "user"
 
 class ProjectCreate(BaseModel):
     make: str

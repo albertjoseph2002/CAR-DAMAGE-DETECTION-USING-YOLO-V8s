@@ -21,6 +21,7 @@ import json
 import os
 from routers.auth import router as auth_router, user_router
 from routers.projects import router as projects_router
+from routers.admin import router as admin_router
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -87,9 +88,11 @@ app = FastAPI()
 app.include_router(auth_router)
 app.include_router(user_router)
 app.include_router(projects_router)
+app.include_router(admin_router)
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="front end/user module"), name="static")
+app.mount("/admin_static", StaticFiles(directory="front end/admin module"), name="admin_static")
 
 @app.get("/")
 async def read_index():
@@ -142,6 +145,14 @@ async def read_projects():
 @app.get("/generate_report")
 async def read_generate_report():
     return FileResponse('front end/user module/generate_report.html')
+
+@app.get("/admin/login")
+async def read_admin_login():
+    return FileResponse('front end/admin module/login.html')
+
+@app.get("/admin/dashboard")
+async def read_admin_dashboard():
+    return FileResponse('front end/admin module/dashboard.html')
 
 @app.post('/detection')
 def post_detection(file: bytes = File(...)):
