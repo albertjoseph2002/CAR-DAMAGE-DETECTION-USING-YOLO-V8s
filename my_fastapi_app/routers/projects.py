@@ -99,3 +99,41 @@ async def delete_project_analysis(project_id: str, index: int, current_user: dic
     )
     
     return {"status": "success", "message": "Analysis deleted"}
+
+@router.get("/{project_id}/statistics")
+async def get_project_statistics(project_id: str, current_user: dict = Depends(get_current_user)):
+    try:
+        project = await db.projects.find_one({"_id": ObjectId(project_id), "user_id": current_user["id"]})
+    except:
+        raise HTTPException(status_code=400, detail="Invalid project ID")
+        
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    all_classes = [
+        'Headlight-Damage', 'RunningBoard-Dent', 'Sidemirror-Damage', 'Taillight-Damage',
+        'Windscreen-Damage', 'bonnet-dent', 'boot-dent', 'doorouter-dent',
+        'fender-dent', 'front-bumper-dent', 'quaterpanel-dent', 'rear-bumper-dent', 'roof-dent'
+    ]
+    
+    damage_counts = {cls: 0 for cls in all_classes}
+    total_damages_found = 0
+    
+    for scan in project.get("analyzed_images", []):
+        for damage in scan.get("damages", []):
+            found = False
+            for cls in damage_counts.keys():
+                if cls.lower() == damage.lower():
+                    damage_counts[cls] += 1
+                    total_damages_found += 1
+                    found = True
+                    break
+            if not found:
+                damage_counts[damage] = damage_counts.get(damage, 0) + 1
+                total_damages_found += 1
+                
+    return {
+        "damage_counts": damage_counts,
+        "total_damages": total_damages_found,
+        "total_classes": len(all_classes)
+    }

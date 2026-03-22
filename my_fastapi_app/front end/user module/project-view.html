@@ -39,6 +39,7 @@
         <div class="dashboard-header flex-between">
             <h3>Saved Analyses</h3>
             <div>
+                <a href="#" id="viewStatsBtn" class="btn-secondary small" style="margin-right: 10px;">View Statistics</a>
                 <a href="#" id="downloadReportBtn" class="btn-secondary small" style="margin-right: 10px;">Download Report</a>
                 <a href="#" id="newScanBtn" class="btn-primary small">Start New Scan</a>
             </div>
@@ -68,6 +69,7 @@
             localStorage.setItem('current_project', projectId);
             document.getElementById('newScanBtn').href = `/select_input?project=${projectId}`;
             document.getElementById('downloadReportBtn').href = `/generate_report?project=${projectId}`;
+            document.getElementById('viewStatsBtn').href = `/project-statistics?id=${projectId}`;
 
             try {
                 const response = await fetch(`/api/projects/${projectId}`, {

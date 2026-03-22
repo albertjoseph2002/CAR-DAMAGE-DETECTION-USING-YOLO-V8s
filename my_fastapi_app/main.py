@@ -142,6 +142,10 @@ async def read_create_project():
 async def read_projects():
     return FileResponse('front end/user module/projects.html')
 
+@app.get("/project-statistics")
+async def read_project_statistics():
+    return FileResponse('front end/user module/project-statistics.html')
+
 @app.get("/generate_report")
 async def read_generate_report():
     return FileResponse('front end/user module/generate_report.html')
