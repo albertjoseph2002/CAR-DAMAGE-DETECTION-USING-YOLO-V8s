@@ -114,8 +114,111 @@
     </section>
 
     <footer>
-        <p>&copy; 2026 AutoInspect AI by Albert Joseph . All rights reserved.</p>
+    </footer>
+
+    <!-- Edit Profile Modal -->
+    <div class="profile-modal-overlay" id="profileModalOverlay">
+        <div class="profile-modal">
+            <button class="profile-modal-close" id="closeProfileModal">&times;</button>
+            <div class="profile-modal-header">
+                <div class="profile-avatar-wrapper" id="profileModalAvatar">A</div>
+                <h3 class="profile-modal-title">Edit Profile</h3>
+            </div>
+            <form id="profileForm">
+                <div class="profile-form-group">
+                    <label for="profileFirstName">First Name</label>
+                    <input type="text" id="profileFirstName" required>
+                </div>
+                <div class="profile-form-group">
+                    <label for="profileLastName">Last Name</label>
+                    <input type="text" id="profileLastName" required>
+                </div>
+                <div class="profile-form-group">
+                    <label for="profileEmail">Email Address</label>
+                    <input type="email" id="profileEmail" required>
+                </div>
+                <div class="profile-form-group">
+                    <label for="profilePassword">New Password (optional)</label>
+                    <input type="password" id="profilePassword" placeholder="Leave blank to keep current">
+                </div>
+                <div class="profile-modal-actions">
+                    <button type="submit" class="profile-btn-submit" id="profileSubmitBtn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
+        let currentUserData = null;
+
+        function openProfileModal(user) {
+            document.getElementById('profileFirstName').value = user.first_name || '';
+            document.getElementById('profileLastName').value = user.last_name || '';
+            document.getElementById('profileEmail').value = user.email || '';
+            document.getElementById('profilePassword').value = '';
+            document.getElementById('profileModalAvatar').textContent = user.first_name ? user.first_name.charAt(0).toUpperCase() : 'U';
+            document.getElementById('profileModalOverlay').classList.add('active');
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profileModalOverlay').classList.remove('active');
+        }
+
+        document.getElementById('closeProfileModal').addEventListener('click', closeProfileModal);
+        
+        document.getElementById('profileModalOverlay').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('profileModalOverlay')) {
+                closeProfileModal();
+            }
+        });
+
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('profileSubmitBtn');
+            const originalText = btn.textContent;
+            btn.textContent = 'Saving...';
+            btn.disabled = true;
+
+            const updateData = {
+                first_name: document.getElementById('profileFirstName').value,
+                last_name: document.getElementById('profileLastName').value,
+                email: document.getElementById('profileEmail').value,
+            };
+            
+            const pwd = document.getElementById('profilePassword').value;
+            if (pwd) updateData.password = pwd;
+
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch('/api/users/me', {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updateData)
+                });
+
+                if (res.ok) {
+                    const updatedUser = await res.json();
+                    currentUserData = updatedUser;
+                    document.querySelector('.hero-title').textContent = `Welcome, ${updatedUser.first_name}!`;
+                    document.querySelector('.brand-text').textContent = `AutoInspect AI / ${updatedUser.first_name}`;
+                    closeProfileModal();
+                    // Optional: You could add a nice toast notification here
+                } else {
+                    const error = await res.json();
+                    alert(error.detail || "Failed to update profile.");
+                }
+            } catch (err) {
+                console.error("Update error:", err);
+                alert("An error occurred while updating profile.");
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        });
+
         document.addEventListener('DOMContentLoaded', async () => {
             const token = localStorage.getItem('token');
             if (!token) {
@@ -137,8 +240,22 @@
                     const navBrand = document.querySelector('.brand-text');
                     navBrand.textContent = `AutoInspect AI / ${user.first_name}`;
                     
-                    // Add logout button
+                    // Store for modal
+                    currentUserData = user;
+
+                    // Add Edit Profile and Logout buttons
                     const navLinks = document.querySelector('.nav-links');
+                    
+                    const profileBtn = document.createElement('a');
+                    profileBtn.href = '#';
+                    profileBtn.className = 'nav-profile-btn';
+                    profileBtn.innerHTML = `<span>Edit Profile</span>`;
+                    profileBtn.onclick = (e) => {
+                        e.preventDefault();
+                        if(currentUserData) openProfileModal(currentUserData);
+                    };
+                    navLinks.appendChild(profileBtn);
+
                     const logoutBtn = document.createElement('a');
                     logoutBtn.href = '#';
                     logoutBtn.className = 'nav-link';

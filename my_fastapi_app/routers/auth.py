@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from models.schemas import UserCreate, UserResponse, Token
+from models.schemas import UserCreate, UserResponse, Token, UserUpdate
 from routers.db_config import db
 from utils.auth import get_password_hash, verify_password, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 from utils.dependencies import get_current_user
 from datetime import timedelta
+from bson import ObjectId
 import uuid
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -56,6 +57,38 @@ user_router = APIRouter(prefix="/api/users", tags=["users"])
 
 @user_router.get("/me", response_model=UserResponse)
 async def read_users_me(current_user: dict = Depends(get_current_user)):
+    return UserResponse(
+        id=current_user["id"],
+        first_name=current_user["first_name"],
+        last_name=current_user["last_name"],
+        email=current_user["email"]
+    )
+
+@user_router.put("/me", response_model=UserResponse)
+async def update_users_me(user_update: UserUpdate, current_user: dict = Depends(get_current_user)):
+    update_data = {k: v for k, v in user_update.dict().items() if v is not None}
+    
+    if "email" in update_data and update_data["email"] != current_user["email"]:
+        existing_user = await db.users.find_one({"email": update_data["email"]})
+        if existing_user:
+            raise HTTPException(status_code=400, detail="Email already registered")
+            
+    if "password" in update_data:
+        update_data["password"] = get_password_hash(update_data["password"])
+        
+    if update_data:
+        await db.users.update_one(
+            {"_id": ObjectId(current_user["id"])},
+            {"$set": update_data}
+        )
+        updated_user = await db.users.find_one({"_id": ObjectId(current_user["id"])})
+        return UserResponse(
+            id=str(updated_user["_id"]),
+            first_name=updated_user["first_name"],
+            last_name=updated_user["last_name"],
+            email=updated_user["email"]
+        )
+        
     return UserResponse(
         id=current_user["id"],
         first_name=current_user["first_name"],
