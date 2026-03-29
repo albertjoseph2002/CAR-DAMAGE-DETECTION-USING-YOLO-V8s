@@ -82,12 +82,14 @@
             }
 
             // Get values
+            const projectName = document.getElementById('projectName').value;
             const carMake = document.getElementById('carMake').value;
             const carName = document.getElementById('carName').value;
             const carYear = document.getElementById('carYear').value;
             const numberPlate = document.getElementById('numberPlate').value;
 
             const projectData = {
+                projectName: projectName,
                 make: carMake,
                 model: carName,
                 year: carYear,

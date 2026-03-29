@@ -145,7 +145,7 @@
                         const project = await response.json();
                         
                         // Handle backward compatibility or display logic
-                        const projectName = project.name || `${project.year} ${project.make} ${project.model}`;
+                        const projectName = project.projectName || `${project.year} ${project.make} ${project.model}`;
                         document.getElementById('projectNameDisplay').textContent = projectName;
                         document.getElementById('vehicleDisplay').textContent = `${project.year} ${project.make} ${project.model}`;
 

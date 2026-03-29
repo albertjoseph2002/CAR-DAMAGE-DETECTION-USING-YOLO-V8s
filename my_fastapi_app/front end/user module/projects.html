@@ -74,7 +74,7 @@
                         card.className = 'project-card modern-card';
                         card.innerHTML = `
                             <div class="project-header">
-                                <h3 class="project-title">${project.year} ${project.make} ${project.model}</h3>
+                                <h3 class="project-title">${project.projectName || `${project.year} ${project.make} ${project.model}`}</h3>
                                 <span class="project-date">ID: ${project.id.slice(-6)}</span>
                             </div>
                             <div class="project-details">

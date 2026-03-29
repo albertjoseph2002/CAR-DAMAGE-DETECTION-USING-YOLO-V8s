@@ -26,6 +26,7 @@ class Token(BaseModel):
     role: str = "user"
 
 class ProjectCreate(BaseModel):
+    projectName: Optional[str] = None
     make: str
     model: str
     year: str

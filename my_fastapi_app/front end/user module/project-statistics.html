@@ -103,7 +103,7 @@
                 if (projResponse.ok) {
                     const project = await projResponse.json();
                     document.getElementById('projectHeader').innerHTML = `
-                        <h2>${project.year} ${project.make} ${project.model} - Statistics</h2>
+                        <h2>${project.projectName || `${project.year} ${project.make} ${project.model}`} - Statistics</h2>
                         <p style="color: #64748b; margin-top: 0.5rem;">Number Plate: <strong>${project.number_plate || 'N/A'}</strong> | Project ID: ${project.id}</p>
                     `;
                 } else {
