@@ -54,6 +54,7 @@ function setupEventListeners() {
 
     // Modals
     setupUserModal();
+    setupProjectModal();
     setupDeleteModal();
 }
 
@@ -154,6 +155,7 @@ function renderProjectsTable() {
             <td>${project.user_email}</td>
             <td>${project.year} ${project.make} ${project.model} <br><small style="color: #8b949e">${project.number_plate}</small></td>
             <td class="action-btns">
+                <button class="btn-sm" onclick="openEditProjectModal('${project.id}')">Edit</button>
                 <button class="btn-sm btn-danger" onclick="openDeleteModal('project', '${project.id}')">Delete</button>
             </td>
         `;
@@ -231,6 +233,55 @@ window.openEditUserModal = (id) => {
     document.getElementById('userErrorMsg').style.display = 'none';
     
     document.getElementById('userModal').classList.add('active');
+};
+
+// Project Modal Logic
+function setupProjectModal() {
+    const modal = document.getElementById('projectModal');
+    const closeBtns = [document.getElementById('closeProjectModal'), document.getElementById('cancelProjectModal')];
+    const form = document.getElementById('projectForm');
+    
+    closeBtns.forEach(btn => btn.addEventListener('click', () => modal.classList.remove('active')));
+    
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const id = document.getElementById('editProjectId').value;
+        const payload = {
+            projectName: document.getElementById('editProjectName').value,
+            year: document.getElementById('editProjectYear').value,
+            make: document.getElementById('editProjectMake').value,
+            model: document.getElementById('editProjectModel').value,
+            number_plate: document.getElementById('editProjectNumberPlate').value
+        };
+        
+        try {
+            await apiFetch(`/api/admin/projects/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(payload)
+            });
+            modal.classList.remove('active');
+            fetchProjects();
+        } catch (err) {
+            document.getElementById('projectErrorMsg').innerText = err.message;
+            document.getElementById('projectErrorMsg').style.display = 'block';
+        }
+    });
+}
+
+window.openEditProjectModal = (id) => {
+    const project = currentProjects.find(p => p.id === id);
+    if (!project) return;
+    
+    document.getElementById('editProjectId').value = project.id;
+    document.getElementById('editProjectName').value = project.projectName || '';
+    document.getElementById('editProjectYear').value = project.year || '';
+    document.getElementById('editProjectMake').value = project.make || '';
+    document.getElementById('editProjectModel').value = project.model || '';
+    document.getElementById('editProjectNumberPlate').value = project.number_plate || '';
+    
+    document.getElementById('projectErrorMsg').style.display = 'none';
+    document.getElementById('projectModal').classList.add('active');
 };
 
 // Delete Modal Logic

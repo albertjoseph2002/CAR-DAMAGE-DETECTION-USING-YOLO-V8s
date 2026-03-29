@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, EmailStr
+from typing import Optional
 from jose import JWTError, jwt
 from utils.auth import SECRET_KEY, ALGORITHM, create_access_token, get_password_hash
 from routers.db_config import db
@@ -152,5 +153,34 @@ async def delete_project_by_admin(project_id: str, admin: dict = Depends(get_cur
     result = await db.projects.delete_one({"_id": obj_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Project not found")
-        
     return {"message": "Project deleted successfully"}
+
+class AdminProjectUpdate(BaseModel):
+    projectName: Optional[str] = None
+    make: Optional[str] = None
+    model: Optional[str] = None
+    year: Optional[str] = None
+    number_plate: Optional[str] = None
+
+@router.put("/projects/{project_id}")
+async def update_project_by_admin(project_id: str, project_update: AdminProjectUpdate, admin: dict = Depends(get_current_admin)):
+    try:
+        obj_id = ObjectId(project_id)
+    except:
+        raise HTTPException(status_code=400, detail="Invalid Project ID")
+        
+    update_data = {k: v for k, v in project_update.dict().items() if v is not None}
+    
+    if not update_data:
+        return {"message": "No data to update"}
+
+    result = await db.projects.update_one(
+        {"_id": obj_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Project not found")
+        
+    return {"message": "Project updated successfully"}
+
