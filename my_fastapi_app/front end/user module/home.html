@@ -21,7 +21,7 @@
         </div>
         <div class="nav-links">
             <a href="/home" class="nav-link active">Home</a>
-            <a href="/projects" class="nav-link">View Projects</a>
+            <a href="/projects" class="nav-link">Manage Projects</a>
             <a href="/create_project" class="nav-btn">Create Project</a>
         </div>
     </nav>
@@ -62,27 +62,32 @@
             <div class="feature-card">
                 <div class="feature-icon">🧠</div>
                 <h3>Enhanced YOLOv8s AI Engine</h3>
-                <p>Powered by our upgraded YOLOv8s model with high-sensitivity thresholds, identifying 13 distinct classes of vehicle damage with pinpoint accuracy.</p>
+                <p>Powered by our upgraded YOLOv8s model with high-sensitivity thresholds, identifying 13 distinct
+                    classes of vehicle damage with pinpoint accuracy.</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon">📸</div>
                 <h3>Multi-Modal Analysis</h3>
-                <p>Upload static images, process walkaround videos, or use your live webcam to instantly detect and track physical damages.</p>
+                <p>Upload static images, process walkaround videos, or use your live webcam to instantly detect and
+                    track physical damages.</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon">📊</div>
                 <h3>Interactive Statistics</h3>
-                <p>Visualize the severity and spread of vehicle damages using interactive pie charts and detailed quantitative summaries.</p>
+                <p>Visualize the severity and spread of vehicle damages using interactive pie charts and detailed
+                    quantitative summaries.</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon">📄</div>
                 <h3>Professional PDF Reports</h3>
-                <p>Generate, preview, and download formatted PDF documents featuring damage bounds, part breakdowns, and comprehensive cost estimates.</p>
+                <p>Generate, preview, and download formatted PDF documents featuring damage bounds, part breakdowns, and
+                    comprehensive cost estimates.</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon">💾</div>
                 <h3>Centralized Workspaces</h3>
-                <p>Save all your analyzed scans, statistics, and reports persistently to dedicated projects for easy access and historical tracking.</p>
+                <p>Save all your analyzed scans, statistics, and reports persistently to dedicated projects for easy
+                    access and historical tracking.</p>
             </div>
         </div>
     </section>
@@ -93,22 +98,26 @@
             <div class="step">
                 <div class="step-num">1</div>
                 <h3>Create a Project Workspace</h3>
-                <p>Enter the car's basic details to set up a dedicated project. All your subsequent analysis and generated reports will be organized here.</p>
+                <p>Enter the car's basic details to set up a dedicated project. All your subsequent analysis and
+                    generated reports will be organized here.</p>
             </div>
             <div class="step">
                 <div class="step-num">2</div>
                 <h3>Run AI Damage Detection</h3>
-                <p>Upload your media or stream your webcam. Our AI instantly highlights damaged areas with bounding boxes and calculates severity scores.</p>
+                <p>Upload your media or stream your webcam. Our AI instantly highlights damaged areas with bounding
+                    boxes and calculates severity scores.</p>
             </div>
             <div class="step">
                 <div class="step-num">3</div>
                 <h3>Review Insights & Stats</h3>
-                <p>Navigate to the project's statistics page to see a visual breakdown of the damages using interactive, color-coded charts.</p>
+                <p>Navigate to the project's statistics page to see a visual breakdown of the damages using interactive,
+                    color-coded charts.</p>
             </div>
             <div class="step">
                 <div class="step-num">4</div>
                 <h3>Generate & Save Reports</h3>
-                <p>Compile the detected information into a professional PDF report, saving it directly to your project for future reference and sharing.</p>
+                <p>Compile the detected information into a professional PDF report, saving it directly to your project
+                    for future reference and sharing.</p>
             </div>
         </div>
     </section>
@@ -165,7 +174,7 @@
         }
 
         document.getElementById('closeProfileModal').addEventListener('click', closeProfileModal);
-        
+
         document.getElementById('profileModalOverlay').addEventListener('click', (e) => {
             if (e.target === document.getElementById('profileModalOverlay')) {
                 closeProfileModal();
@@ -184,7 +193,7 @@
                 last_name: document.getElementById('profileLastName').value,
                 email: document.getElementById('profileEmail').value,
             };
-            
+
             const pwd = document.getElementById('profilePassword').value;
             if (pwd) updateData.password = pwd;
 
@@ -225,34 +234,34 @@
                 window.location.href = '/login';
                 return;
             }
-            
+
             try {
                 const res = await fetch('/api/users/me', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                
+
                 if (res.ok) {
                     const user = await res.json();
                     const titleEl = document.querySelector('.hero-title');
                     titleEl.textContent = `Welcome, ${user.first_name}!`;
-                    
+
                     // Change top nav brand
                     const navBrand = document.querySelector('.brand-text');
                     navBrand.textContent = `AutoInspect AI / ${user.first_name}`;
-                    
+
                     // Store for modal
                     currentUserData = user;
 
                     // Add Edit Profile and Logout buttons
                     const navLinks = document.querySelector('.nav-links');
-                    
+
                     const profileBtn = document.createElement('a');
                     profileBtn.href = '#';
                     profileBtn.className = 'nav-profile-btn';
                     profileBtn.innerHTML = `<span>Edit Profile</span>`;
                     profileBtn.onclick = (e) => {
                         e.preventDefault();
-                        if(currentUserData) openProfileModal(currentUserData);
+                        if (currentUserData) openProfileModal(currentUserData);
                     };
                     navLinks.appendChild(profileBtn);
 
@@ -277,4 +286,5 @@
         });
     </script>
 </body>
+
 </html>

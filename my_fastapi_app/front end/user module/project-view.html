@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,16 +8,63 @@
     <link rel="stylesheet" href="/static/style.css?v=4.0">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        .project-header-section { margin-bottom: 2rem; padding: 1.5rem; background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
-        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
-        .gallery-card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .gallery-img { width: 100%; height: 200px; object-fit: cover; }
-        .gallery-info { padding: 1rem; }
-        .scan-date { font-size: 0.875rem; color: #64748b; margin-bottom: 0.5rem; }
-        .damage-tag { display: inline-block; background: #fee2e2; color: #ef4444; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 500; margin: 0.25rem; }
-        .nav-link { color: #3b82f6; text-decoration: none; font-weight: 500; margin-right: 15px; }
+        .project-header-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .gallery-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .gallery-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .gallery-info {
+            padding: 1rem;
+        }
+
+        .scan-date {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+        }
+
+        .damage-tag {
+            display: inline-block;
+            background: #fee2e2;
+            color: #ef4444;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin: 0.25rem;
+        }
+
+        .nav-link {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 500;
+            margin-right: 15px;
+        }
     </style>
 </head>
+
 <body class="bg-gray">
     <nav class="top-nav">
         <div class="nav-brand">
@@ -24,23 +72,26 @@
         </div>
         <div class="nav-links">
             <a href="/home" class="nav-link">Home</a>
-            <a href="/projects" class="nav-link">View Projects</a>
+            <a href="/projects" class="nav-link">Manage Projects</a>
             <a href="/create_project" class="nav-btn">Create Project</a>
         </div>
     </nav>
 
     <div class="dashboard-container">
-        <a href="/projects" class="nav-link" style="display:inline-block; margin-bottom:1rem;">&larr; Back to Projects</a>
-        
+        <a href="/projects" class="nav-link" style="display:inline-block; margin-bottom:1rem;">&larr; Back to
+            Projects</a>
+
         <div class="project-header-section" id="projectHeader">
             <h2>Loading Project...</h2>
         </div>
-        
+
         <div class="dashboard-header flex-between">
             <h3>Saved Analyses</h3>
             <div>
-                <a href="#" id="viewStatsBtn" class="btn-secondary small" style="margin-right: 10px;">View Statistics</a>
-                <a href="#" id="downloadReportBtn" class="btn-secondary small" style="margin-right: 10px;">Download Report</a>
+                <a href="#" id="viewStatsBtn" class="btn-secondary small" style="margin-right: 10px;">View
+                    Statistics</a>
+                <a href="#" id="downloadReportBtn" class="btn-secondary small" style="margin-right: 10px;">Download
+                    Report</a>
                 <a href="#" id="newScanBtn" class="btn-primary small">Start New Scan</a>
             </div>
         </div>
@@ -61,10 +112,10 @@
             const urlParams = new URLSearchParams(window.location.search);
             const projectId = urlParams.get('id');
             const token = localStorage.getItem('token');
-            
+
             if (!token) { window.location.href = '/login'; return; }
             if (!projectId) { window.location.href = '/projects'; return; }
-            
+
             // Set current project in local storage for the scanner flow
             localStorage.setItem('current_project', projectId);
             document.getElementById('newScanBtn').href = `/select_input?project=${projectId}`;
@@ -75,41 +126,41 @@
                 const response = await fetch(`/api/projects/${projectId}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                
+
                 if (response.ok) {
                     const project = await response.json();
-                    
+
                     document.getElementById('projectHeader').innerHTML = `
                         <h2>${project.projectName || `${project.year} ${project.make} ${project.model}`}</h2>
                         <p style="color: #64748b; margin-top: 0.5rem;">Number Plate: <strong>${project.number_plate || 'N/A'}</strong> | Project ID: ${project.id}</p>
                     `;
-                    
+
                     const gallery = document.getElementById('galleryGrid');
                     const noScans = document.getElementById('noScansMessage');
-                    
+
                     const scans = project.analyzed_images || [];
-                    
+
                     if (scans.length === 0) {
                         noScans.style.display = 'block';
                     } else {
                         // Map to include original index before sort
-                        const scansWithIndex = scans.map((scan, index) => ({...scan, originalIndex: index}));
+                        const scansWithIndex = scans.map((scan, index) => ({ ...scan, originalIndex: index }));
 
                         // Sort newest first
-                        scansWithIndex.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
-                        
+                        scansWithIndex.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
                         scansWithIndex.forEach(scan => {
                             const date = new Date(scan.timestamp).toLocaleString();
-                            
+
                             // Map damages to their individual estimates, if available
                             const estArray = scan.estimates?.estimates || [];
-                            
+
                             const damagesHtml = scan.damages.map(d => {
                                 let costText = "";
                                 if (estArray.length > 0) {
                                     // Try to find a matching cost for this specific damage part
-                                    const matchingEstimate = estArray.find(est => 
-                                        est.part.toLowerCase().includes(d.toLowerCase()) || 
+                                    const matchingEstimate = estArray.find(est =>
+                                        est.part.toLowerCase().includes(d.toLowerCase()) ||
                                         d.toLowerCase().includes(est.part.toLowerCase())
                                     );
                                     if (matchingEstimate && matchingEstimate.cost) {
@@ -118,12 +169,12 @@
                                 }
                                 return `<span class="damage-tag">${d}${costText}</span>`;
                             }).join('');
-                            
+
                             const estTotal = scan.estimates?.total || 'N/A';
-                            
+
                             const card = document.createElement('div');
                             card.className = 'gallery-card';
-                            
+
                             let mediaHtml = '';
                             if (scan.media_type === 'video') {
                                 mediaHtml = `<video src="${scan.image_path}" class="gallery-img" controls style="background-color: #000;"></video>`;
@@ -157,14 +208,14 @@
 
         async function deleteAnalysis(projectId, index) {
             if (!confirm("Are you sure you want to delete this analysis?")) return;
-            
+
             const token = localStorage.getItem('token');
             try {
                 const response = await fetch(`/api/projects/${projectId}/analysis/${index}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                
+
                 if (response.ok) {
                     window.location.reload();
                 } else {
@@ -177,4 +228,5 @@
         }
     </script>
 </body>
+
 </html>

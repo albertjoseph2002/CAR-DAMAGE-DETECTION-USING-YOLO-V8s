@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +9,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .stats-header-section { margin-bottom: 2rem; padding: 1.5rem; background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        .stats-header-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
         .chart-container {
             background: white;
             padding: 2rem;
@@ -22,24 +30,44 @@
             margin-left: auto;
             margin-right: auto;
         }
+
         .stats-summary {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
+
         .stat-card {
             background: white;
             padding: 1.5rem;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             text-align: center;
         }
-        .stat-card h4 { color: #64748b; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; }
-        .stat-card div { font-size: 1.5rem; font-weight: 700; color: #1e293b; }
-        .nav-link { color: #3b82f6; text-decoration: none; font-weight: 500; margin-right: 15px; }
+
+        .stat-card h4 {
+            color: #64748b;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card div {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .nav-link {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 500;
+            margin-right: 15px;
+        }
     </style>
 </head>
+
 <body class="bg-gray">
     <nav class="top-nav">
         <div class="nav-brand">
@@ -47,14 +75,15 @@
         </div>
         <div class="nav-links">
             <a href="/home" class="nav-link">Home</a>
-            <a href="/projects" class="nav-link">View Projects</a>
+            <a href="/projects" class="nav-link">Manage Projects</a>
             <a href="/create_project" class="nav-btn">Create Project</a>
         </div>
     </nav>
 
     <div class="dashboard-container">
-        <a href="#" id="backToProjectBtn" class="nav-link" style="display:inline-block; margin-bottom:1rem;">&larr; Back to Project</a>
-        
+        <a href="#" id="backToProjectBtn" class="nav-link" style="display:inline-block; margin-bottom:1rem;">&larr; Back
+            to Project</a>
+
         <div class="stats-header-section" id="projectHeader">
             <h2>Project Statistics</h2>
             <p style="color: #64748b; margin-top: 0.5rem;">Loading data...</p>
@@ -74,7 +103,7 @@
                 <div id="frequentDamageValue" style="color: #ef4444;">-</div>
             </div>
         </div>
-        
+
         <div class="chart-container">
             <h3 style="margin-bottom: 1.5rem; width: 100%; text-align: left;">Damage Distribution</h3>
             <div style="position: relative; height: 400px; width: 100%;">
@@ -88,10 +117,10 @@
             const urlParams = new URLSearchParams(window.location.search);
             const projectId = urlParams.get('id');
             const token = localStorage.getItem('token');
-            
+
             if (!token) { window.location.href = '/login'; return; }
             if (!projectId) { window.location.href = '/projects'; return; }
-            
+
             document.getElementById('backToProjectBtn').href = `/project-view?id=${projectId}`;
 
             try {
@@ -99,7 +128,7 @@
                 const projResponse = await fetch(`/api/projects/${projectId}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                
+
                 if (projResponse.ok) {
                     const project = await projResponse.json();
                     document.getElementById('projectHeader').innerHTML = `
@@ -124,8 +153,8 @@
                     document.getElementById('totalClassesValue').textContent = stats.total_classes;
 
                     // Sort values and find most frequent
-                    const sortedClasses = Object.entries(damageCounts).sort((a,b) => b[1] - a[1]);
-                    if(sortedClasses.length > 0 && sortedClasses[0][1] > 0) {
+                    const sortedClasses = Object.entries(damageCounts).sort((a, b) => b[1] - a[1]);
+                    if (sortedClasses.length > 0 && sortedClasses[0][1] > 0) {
                         document.getElementById('frequentDamageValue').textContent = sortedClasses[0][0];
                     } else {
                         document.getElementById('frequentDamageValue').textContent = 'None';
@@ -136,10 +165,10 @@
                     const labels = [];
                     const data = [];
                     const backgroundColors = [];
-                    
+
                     // Generate colors spanning the color wheel
                     const colorPalette = [
-                        '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16', '#22c55e', '#10b981', '#14b8a6', 
+                        '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16', '#22c55e', '#10b981', '#14b8a6',
                         '#06b6d4', '#0ea5e9', '#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899', '#f43f5e'
                     ];
 
@@ -182,7 +211,7 @@
                                 },
                                 tooltip: {
                                     callbacks: {
-                                        label: function(context) {
+                                        label: function (context) {
                                             const total = context.dataset.data.reduce((acc, val) => acc + val, 0);
                                             const val = context.raw;
                                             const percentage = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
@@ -201,7 +230,7 @@
                     });
 
                 } else {
-                     document.getElementById('projectHeader').innerHTML += `<p style="color: #ef4444;">Failed to load statistics data.</p>`;
+                    document.getElementById('projectHeader').innerHTML += `<p style="color: #ef4444;">Failed to load statistics data.</p>`;
                 }
             } catch (error) {
                 console.error("Error fetching project statistics", error);
@@ -209,4 +238,5 @@
         });
     </script>
 </body>
+
 </html>

@@ -80,7 +80,7 @@
         </div>
         <div class="nav-links">
             <a href="/home" class="nav-link">Home</a>
-            <a href="/projects" class="nav-link">View Projects</a>
+            <a href="/projects" class="nav-link">Manage Projects</a>
             <a href="/create_project" class="nav-btn">Create Project</a>
         </div>
     </nav>
@@ -131,8 +131,8 @@
             const token = localStorage.getItem('token');
 
             if (!token) {
-                 window.location.href = '/login';
-                 return;
+                window.location.href = '/login';
+                return;
             }
 
             if (projectId) {
@@ -140,10 +140,10 @@
                     const response = await fetch(`/api/projects/${projectId}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
-                    
+
                     if (response.ok) {
                         const project = await response.json();
-                        
+
                         // Handle backward compatibility or display logic
                         const projectName = project.projectName || `${project.year} ${project.make} ${project.model}`;
                         document.getElementById('projectNameDisplay').textContent = projectName;
@@ -157,7 +157,7 @@
                         alert("Project not found!");
                         window.location.href = "/projects";
                     }
-                } catch(error) {
+                } catch (error) {
                     console.error("Error loading project:", error);
                     window.location.href = "/projects";
                 }
