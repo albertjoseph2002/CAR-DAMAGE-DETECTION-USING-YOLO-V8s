@@ -41,12 +41,16 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="carMake">Car Make</label>
-                        <input type="text" id="carMake" name="carMake" placeholder="e.g., Toyota" required>
+                        <input type="text" id="carMake" name="carMake" placeholder="e.g., Toyota" list="makeList" autocomplete="off" required>
+                        <datalist id="makeList"></datalist>
+                        <span class="error-message" id="makeError" style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: 0.25rem;"></span>
                     </div>
 
                     <div class="form-group">
                         <label for="carName">Car Model/Name</label>
-                        <input type="text" id="carName" name="carName" placeholder="e.g., Camry" required>
+                        <input type="text" id="carName" name="carName" placeholder="e.g., Camry" list="modelList" autocomplete="off" required>
+                        <datalist id="modelList"></datalist>
+                        <span class="error-message" id="modelError" style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: 0.25rem;"></span>
                     </div>
                 </div>
 
@@ -55,6 +59,7 @@
                         <label for="carYear">Year Registered</label>
                         <input type="number" id="carYear" name="carYear" min="1900" max="2030" placeholder="e.g., 2022"
                             required>
+                        <span class="error-message" id="yearError" style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: 0.25rem;"></span>
                     </div>
 
                     <div class="form-group">
@@ -71,7 +76,52 @@
         </div>
     </div>
 
+    <script src="/static/cars_database.js"></script>
     <script>
+        // Populate the Make datalist
+        document.addEventListener("DOMContentLoaded", () => {
+            const makeList = document.getElementById('makeList');
+            for (const make in carDatabase) {
+                const option = document.createElement('option');
+                option.value = make;
+                makeList.appendChild(option);
+            }
+            
+            // Limit year input to current year dynamically
+            document.getElementById('carYear').max = new Date().getFullYear();
+        });
+
+        // When Make changes, populate Model datalist
+        document.getElementById('carMake').addEventListener('input', function() {
+            const selectedMake = this.value;
+            const modelList = document.getElementById('modelList');
+            
+            // Clear previous models
+            modelList.innerHTML = '';
+            
+            if (carDatabase[selectedMake]) {
+                carDatabase[selectedMake].forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model;
+                    modelList.appendChild(option);
+                });
+            }
+        });
+
+        // Helper to show/hide error
+        function showError(inputId, errorId, message) {
+            const input = document.getElementById(inputId);
+            const error = document.getElementById(errorId);
+            if (message) {
+                input.style.borderColor = '#ef4444';
+                error.textContent = message;
+                error.style.display = 'block';
+            } else {
+                input.style.borderColor = ''; // reset to default
+                error.style.display = 'none';
+            }
+        }
+
         document.getElementById('createProjectForm').addEventListener('submit', async function (e) {
             e.preventDefault();
 
@@ -83,10 +133,38 @@
 
             // Get values
             const projectName = document.getElementById('projectName').value;
-            const carMake = document.getElementById('carMake').value;
-            const carName = document.getElementById('carName').value;
+            const carMake = document.getElementById('carMake').value.trim();
+            const carName = document.getElementById('carName').value.trim();
             const carYear = document.getElementById('carYear').value;
-            const numberPlate = document.getElementById('numberPlate').value;
+            const numberPlate = document.getElementById('numberPlate').value.trim();
+
+            let isValid = true;
+            
+            // Reset errors
+            showError('carMake', 'makeError', '');
+            showError('carName', 'modelError', '');
+            showError('carYear', 'yearError', '');
+
+            // Validate Make against database
+            if (!carMake || !carDatabase[carMake]) {
+                showError('carMake', 'makeError', 'Please select a valid Car Make from the list.');
+                isValid = false;
+            }
+
+            // Validate Model against database
+            if (carMake && carDatabase[carMake] && !carDatabase[carMake].includes(carName)) {
+                showError('carName', 'modelError', 'Please select a valid Car Model from the list.');
+                isValid = false;
+            }
+
+            // Validate Year
+            const currentYear = new Date().getFullYear();
+            if (carYear < 1900 || carYear > currentYear) {
+                showError('carYear', 'yearError', `Year must be between 1900 and ${currentYear}.`);
+                isValid = false;
+            }
+
+            if (!isValid) return;
 
             const projectData = {
                 projectName: projectName,
