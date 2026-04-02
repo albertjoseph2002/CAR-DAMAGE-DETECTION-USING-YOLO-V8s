@@ -4,6 +4,7 @@ from models.schemas import ProjectCreate, ProjectAnalysisSave
 from routers.db_config import db
 from utils.dependencies import get_current_user
 from bson import ObjectId
+from utils.file_manager import delete_physical_file
 
 router = APIRouter(prefix="/api/projects", tags=["projects"])
 
@@ -50,6 +51,12 @@ async def get_project(project_id: str, current_user: dict = Depends(get_current_
 @router.delete("/{project_id}")
 async def delete_project(project_id: str, current_user: dict = Depends(get_current_user)):
     try:
+        project = await db.projects.find_one({"_id": ObjectId(project_id), "user_id": current_user["id"]})
+        if project and "analyzed_images" in project:
+            for scan in project["analyzed_images"]:
+                if "image_path" in scan:
+                    delete_physical_file(scan["image_path"])
+
         result = await db.projects.delete_one({"_id": ObjectId(project_id), "user_id": current_user["id"]})
         if result.deleted_count == 0:
             raise HTTPException(status_code=404, detail="Project not found")
@@ -86,6 +93,11 @@ async def delete_project_analysis(project_id: str, index: int, current_user: dic
         
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
+
+    if "analyzed_images" in project and len(project["analyzed_images"]) > index:
+        scan = project["analyzed_images"][index]
+        if scan and "image_path" in scan:
+            delete_physical_file(scan["image_path"])
 
     # To delete by index in an array, we first unset the element at that index, then pull nulls.
     await db.projects.update_one(

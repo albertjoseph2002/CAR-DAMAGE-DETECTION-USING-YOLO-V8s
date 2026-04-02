@@ -8,6 +8,7 @@ from datetime import timedelta
 from utils.auth import ACCESS_TOKEN_EXPIRE_MINUTES
 from bson import ObjectId
 from fastapi.security import OAuth2PasswordBearer
+from utils.file_manager import delete_physical_file
 
 # Admin Credentials
 ADMIN_EMAIL = "admin@123"
@@ -122,6 +123,14 @@ async def delete_user_by_admin(user_id: str, admin: dict = Depends(get_current_a
         raise HTTPException(status_code=404, detail="User not found")
     
     # Cascade delete their projects
+    projects_cursor = db.projects.find({"user_id": user_id})
+    projects = await projects_cursor.to_list(length=1000)
+    for project in projects:
+        if "analyzed_images" in project:
+            for scan in project["analyzed_images"]:
+                if "image_path" in scan:
+                    delete_physical_file(scan["image_path"])
+
     await db.projects.delete_many({"user_id": user_id})
     return {"message": "User and their projects deleted successfully"}
 
@@ -150,6 +159,12 @@ async def delete_project_by_admin(project_id: str, admin: dict = Depends(get_cur
     except:
         raise HTTPException(status_code=400, detail="Invalid Project ID")
         
+    project = await db.projects.find_one({"_id": obj_id})
+    if project and "analyzed_images" in project:
+        for scan in project["analyzed_images"]:
+            if "image_path" in scan:
+                delete_physical_file(scan["image_path"])
+
     result = await db.projects.delete_one({"_id": obj_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Project not found")
