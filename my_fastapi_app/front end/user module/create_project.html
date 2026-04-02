@@ -65,6 +65,7 @@
                     <div class="form-group">
                         <label for="numberPlate">Number Plate</label>
                         <input type="text" id="numberPlate" name="numberPlate" placeholder="e.g., MH12AB1234" required>
+                        <span class="error-message" id="plateError" style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: 0.25rem;"></span>
                     </div>
                 </div>
 
@@ -89,6 +90,12 @@
             
             // Limit year input to current year dynamically
             document.getElementById('carYear').max = new Date().getFullYear();
+
+            // Option 3: Number Plate Auto-formatting
+            document.getElementById('numberPlate').addEventListener('input', function(e) {
+                // Convert to uppercase and keep only alphanumeric chars
+                this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            });
         });
 
         // When Make changes, populate Model datalist
@@ -144,6 +151,7 @@
             showError('carMake', 'makeError', '');
             showError('carName', 'modelError', '');
             showError('carYear', 'yearError', '');
+            showError('numberPlate', 'plateError', '');
 
             // Validate Make against database
             if (!carMake || !carDatabase[carMake]) {
@@ -161,6 +169,13 @@
             const currentYear = new Date().getFullYear();
             if (carYear < 1900 || carYear > currentYear) {
                 showError('carYear', 'yearError', `Year must be between 1900 and ${currentYear}.`);
+                isValid = false;
+            }
+
+            // Option 2: Validate Number Plate against strict format
+            const plateRegex = /^[A-Z]{2}[0-9]{1,2}[A-Z]{0,3}[0-9]{4}$/;
+            if (!plateRegex.test(numberPlate)) {
+                showError('numberPlate', 'plateError', 'Invalid format. Use a real style, e.g. MH12AB1234.');
                 isValid = false;
             }
 
