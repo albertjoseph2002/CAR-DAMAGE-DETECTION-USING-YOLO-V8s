@@ -615,6 +615,11 @@ async function stopWebcam() {
             webcamStream = null;
         }
 
+        // Fetch the price estimate ONCE for all detected damages when stopping the webcam
+        if (webcamDetectedDamages.size > 0) {
+            await fetchAndDisplayPriceEstimate(Array.from(webcamDetectedDamages));
+        }
+
         // Handle saving
         if (webcamDetectedDamages.size > 0 && recordedChunks.length > 0) {
             const blob = new Blob(recordedChunks, { type: 'video/webm' });
@@ -785,14 +790,6 @@ function drawWebcamOverlay(data) {
                 `;
                 list.appendChild(li);
             }
-
-            // Trigger price update if new damages are found
-            if (webcamPriceEstimateTimeout) {
-                clearTimeout(webcamPriceEstimateTimeout);
-            }
-            webcamPriceEstimateTimeout = setTimeout(() => {
-                fetchAndDisplayPriceEstimate(Array.from(webcamDetectedDamages));
-            }, 2000); // Wait 2s before fetching to batch damages
         }
     });
 }

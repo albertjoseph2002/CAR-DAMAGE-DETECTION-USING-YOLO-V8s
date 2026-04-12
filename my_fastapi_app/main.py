@@ -41,7 +41,7 @@ generation_config = {
   "response_mime_type": "application/json",
 }
 gemini_model = genai.GenerativeModel(
-  model_name="gemini-2.5-flash",
+  model_name="gemini-3.1-flash-lite-preview",
   generation_config=generation_config,
 )
 
@@ -361,14 +361,23 @@ async def estimate_prices(payload: dict = Body(...)):
 
         response = gemini_model.generate_content(prompt)
         # Parse the JSON response
-        result_json = json.loads(response.text)
+        raw_text = response.text.strip()
+        if raw_text.startswith("```json"):
+            raw_text = raw_text[7:]
+        if raw_text.endswith("```"):
+            raw_text = raw_text[:-3]
+        result_json = json.loads(raw_text.strip())
         return result_json
         
     except Exception as e:
         print(f"Error estimating prices: {str(e)}")
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Price estimation failed: {str(e)}")
+        # Provide a graceful fallback to prevent frontend error display
+        fallback_estimates = []
+        for part in damages:
+            fallback_estimates.append({"part": part, "cost": "Estimate unavailable (API error/quota limit)"})
+        return {"estimates": fallback_estimates, "total": "N/A"}
 
 if __name__ == '__main__':
     uvicorn.run("main:app", host="0.0.0.0", port=8080)

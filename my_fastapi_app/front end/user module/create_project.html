@@ -12,11 +12,15 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </head>
 
 <body class="bg-gray">
     <nav class="top-nav">
         <div class="nav-brand">
+            <ion-icon name="shield-checkmark"
+                style="color: #6366f1; vertical-align: middle; margin-right: 8px;"></ion-icon>
             <span class="brand-text">AutoInspect AI</span>
         </div>
         <div class="nav-links">
@@ -41,16 +45,20 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="carMake">Car Make</label>
-                        <input type="text" id="carMake" name="carMake" placeholder="e.g., Toyota" list="makeList" autocomplete="off" required>
+                        <input type="text" id="carMake" name="carMake" placeholder="e.g., Toyota" list="makeList"
+                            autocomplete="off" required>
                         <datalist id="makeList"></datalist>
-                        <span class="error-message" id="makeError" style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: 0.25rem;"></span>
+                        <span class="error-message" id="makeError"
+                            style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: 0.25rem;"></span>
                     </div>
 
                     <div class="form-group">
                         <label for="carName">Car Model/Name</label>
-                        <input type="text" id="carName" name="carName" placeholder="e.g., Camry" list="modelList" autocomplete="off" required>
+                        <input type="text" id="carName" name="carName" placeholder="e.g., Camry" list="modelList"
+                            autocomplete="off" required>
                         <datalist id="modelList"></datalist>
-                        <span class="error-message" id="modelError" style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: 0.25rem;"></span>
+                        <span class="error-message" id="modelError"
+                            style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: 0.25rem;"></span>
                     </div>
                 </div>
 
@@ -59,13 +67,15 @@
                         <label for="carYear">Year Registered</label>
                         <input type="number" id="carYear" name="carYear" min="1900" max="2030" placeholder="e.g., 2022"
                             required>
-                        <span class="error-message" id="yearError" style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: 0.25rem;"></span>
+                        <span class="error-message" id="yearError"
+                            style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: 0.25rem;"></span>
                     </div>
 
                     <div class="form-group">
                         <label for="numberPlate">Number Plate</label>
                         <input type="text" id="numberPlate" name="numberPlate" placeholder="e.g., MH12AB1234" required>
-                        <span class="error-message" id="plateError" style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: 0.25rem;"></span>
+                        <span class="error-message" id="plateError"
+                            style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: 0.25rem;"></span>
                     </div>
                 </div>
 
@@ -87,25 +97,25 @@
                 option.value = make;
                 makeList.appendChild(option);
             }
-            
+
             // Limit year input to current year dynamically
             document.getElementById('carYear').max = new Date().getFullYear();
 
             // Option 3: Number Plate Auto-formatting
-            document.getElementById('numberPlate').addEventListener('input', function(e) {
+            document.getElementById('numberPlate').addEventListener('input', function (e) {
                 // Convert to uppercase and keep only alphanumeric chars
                 this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
             });
         });
 
         // When Make changes, populate Model datalist
-        document.getElementById('carMake').addEventListener('input', function() {
+        document.getElementById('carMake').addEventListener('input', function () {
             const selectedMake = this.value;
             const modelList = document.getElementById('modelList');
-            
+
             // Clear previous models
             modelList.innerHTML = '';
-            
+
             if (carDatabase[selectedMake]) {
                 carDatabase[selectedMake].forEach(model => {
                     const option = document.createElement('option');
@@ -146,7 +156,7 @@
             const numberPlate = document.getElementById('numberPlate').value.trim();
 
             let isValid = true;
-            
+
             // Reset errors
             showError('carMake', 'makeError', '');
             showError('carName', 'modelError', '');

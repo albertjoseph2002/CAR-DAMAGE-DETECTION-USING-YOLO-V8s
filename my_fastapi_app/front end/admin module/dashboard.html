@@ -16,7 +16,10 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <div class="sidebar-brand">Admin</div>
+            <div class="sidebar-brand">
+                <ion-icon name="shield-checkmark" style="color: #6366f1; vertical-align: middle; margin-right: 8px;"></ion-icon>
+                <span>AutoInspect AI</span>
+            </div>
         </div>
         <div class="nav-menu">
             <a href="#" class="nav-item active" data-target="overview-section">
@@ -36,9 +39,16 @@
         <div class="topbar">
             <div class="page-title" id="pageTitle">Overview</div>
             <div class="admin-profile">
-                <div style="font-size: 14px; color: #334155; font-weight: 500;">Admin User</div>
-                <button class="logout-btn" id="logoutBtn">
-                    Logout <ion-icon name="log-out-outline" style="vertical-align: middle;"></ion-icon>
+                <!-- Avatar placeholder -->
+                <div class="avatar-placeholder" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: linear-gradient(135deg, #e0e7ff, #c7d2fe); border-radius: 50%; color: #4f46e5; font-size: 20px; box-shadow: 0 2px 8px rgba(79, 70, 229, 0.2);">
+                    <ion-icon name="person"></ion-icon>
+                </div>
+                <div class="admin-info" style="display: flex; flex-direction: column;">
+                    <span style="font-size: 14px; color: #1e293b; font-weight: 600; line-height: 1.2;">System Admin</span>
+                    <span style="font-size: 12px; color: #64748b; line-height: 1.2;">admin@autoinspect.ai</span>
+                </div>
+                <button class="logout-btn" id="logoutBtn" title="Logout">
+                    <ion-icon name="log-out-outline" style="font-size: 20px;"></ion-icon>
                 </button>
             </div>
         </div>
@@ -46,6 +56,13 @@
         <div class="content-area">
             <!-- Overview Section -->
             <div id="overview-section" class="section active">
+                <div class="hero-welcome">
+                    <div class="hero-content">
+                        <h2>Good day, Admin! 👋</h2>
+                        <p>Welcome back to your control center. Here's what's happening with AutoInspect today.</p>
+                    </div>
+                </div>
+
                 <div class="metrics-grid">
                     <div class="metric-card">
                         <div class="metric-icon users">
