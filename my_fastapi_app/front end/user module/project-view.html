@@ -154,23 +154,52 @@
 
                             // Map damages to their individual estimates, if available
                             const estArray = scan.estimates?.estimates || [];
+                            
+                            let sumMin = 0;
+                            let sumMax = 0;
+                            let hasValidEstimates = false;
 
                             const damagesHtml = scan.damages.map(d => {
                                 let costText = "";
                                 if (estArray.length > 0) {
                                     // Try to find a matching cost for this specific damage part
-                                    const matchingEstimate = estArray.find(est =>
-                                        est.part.toLowerCase().includes(d.toLowerCase()) ||
-                                        d.toLowerCase().includes(est.part.toLowerCase())
-                                    );
+                                    const matchingEstimate = estArray.find(est => {
+                                        let cleanEst = est.part.toLowerCase().replace(/\(.*?\)/g, '').replace(/quater/g, 'quarter').replace(/[-_ ]/g, '').replace(/(dent|damage|repair|paint)/g, '');
+                                        let baseD = d.toLowerCase().replace(/quater/g, 'quarter').replace(/[-_ ]/g, '').replace(/(dent|damage)/g, '');
+                                        return cleanEst.includes(baseD) || baseD.includes(cleanEst);
+                                    });
                                     if (matchingEstimate && matchingEstimate.cost) {
                                         costText = ` - ${matchingEstimate.cost}`;
+                                        
+                                        // Attempt to parse min and max from the cost string
+                                        const numbers = matchingEstimate.cost.match(/\d[,0-9]*/g);
+                                        if (numbers && numbers.length >= 2) {
+                                            const minVal = parseInt(numbers[0].replace(/,/g, ''));
+                                            const maxVal = parseInt(numbers[1].replace(/,/g, ''));
+                                            if (!isNaN(minVal) && !isNaN(maxVal)) {
+                                                sumMin += minVal;
+                                                sumMax += maxVal;
+                                                hasValidEstimates = true;
+                                            }
+                                        } else if (numbers && numbers.length === 1) {
+                                            const val = parseInt(numbers[0].replace(/,/g, ''));
+                                            if (!isNaN(val)) {
+                                                sumMin += val;
+                                                sumMax += val;
+                                                hasValidEstimates = true;
+                                            }
+                                        }
                                     }
                                 }
                                 return `<span class="damage-tag">${d}${costText}</span>`;
                             }).join('');
 
-                            const estTotal = scan.estimates?.total || 'N/A';
+                            let estTotal = scan.estimates?.total || 'N/A';
+                            if (hasValidEstimates) {
+                                estTotal = `₹${sumMin} - ₹${sumMax}`;
+                            } else if (scan.damages.length === 0 || !scan.damages) {
+                                estTotal = 'None';
+                            }
 
                             const card = document.createElement('div');
                             card.className = 'gallery-card';
@@ -192,7 +221,7 @@
                                         <button class="btn-danger small" onclick="deleteAnalysis('${project.id}', ${scan.originalIndex})" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Delete</button>
                                     </div>
                                     <div style="margin-bottom: 0.5rem; margin-top: 0.25rem;"><strong>Damages:</strong> <br/> ${damagesHtml || 'None detected'}</div>
-                                    <div><strong>Est. Total Cost:</strong> ${estTotal}</div>
+                                    <div><strong>Total cost of damages:</strong> ${estTotal}</div>
                                 </div>
                             `;
                             gallery.appendChild(card);

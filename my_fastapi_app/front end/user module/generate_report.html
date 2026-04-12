@@ -157,7 +157,9 @@
                 <thead>
                     <tr>
                         <th>Damaged Part</th>
-                        <th>Estimated Cost (INR)</th>
+                        <th>Qty</th>
+                        <th>Estimated Unit Cost</th>
+                        <th>Total Estimated Cost</th>
                     </tr>
                 </thead>
                 <tbody id="repDamagesBody"></tbody>
@@ -221,17 +223,35 @@
                 document.getElementById('repSignature').textContent = `${userData.first_name} ${userData.last_name}`;
 
                 // Deduplicate and process damages
-                const uniqueEstimates = new Map(); // Map<PartName, CostString>
+                const partCounts = new Map(); // Map<DamageName, int>
+                const uniqueEstimates = new Map(); // Map<DamageName, string (cost)>
                 const scans = projectData.analyzed_images || [];
 
                 scans.forEach(scan => {
+                    if (scan.media_type === 'pdf') return;
+
                     const estArray = scan.estimates?.estimates || [];
-                    estArray.forEach(est => {
-                        uniqueEstimates.set(est.part, est.cost);
-                    });
-                    if (estArray.length === 0 && scan.damages) {
+                    
+                    if (scan.damages && scan.damages.length > 0) {
                         scan.damages.forEach(d => {
-                            if (!uniqueEstimates.has(d)) uniqueEstimates.set(d, "Estimation unavailable");
+                            let key = d.trim();
+                            partCounts.set(key, (partCounts.get(key) || 0) + 1);
+                            
+                            // Find corresponding unit cost from estArray if we haven't
+                            if (!uniqueEstimates.has(key)) {
+                                let foundCost = "Estimation unavailable";
+                                if (estArray.length > 0) {
+                                    const matchingEstimate = estArray.find(est => {
+                                        let cleanEst = est.part.toLowerCase().replace(/\(.*?\)/g, '').replace(/quater/g, 'quarter').replace(/[-_ ]/g, '').replace(/(dent|damage|repair|paint)/g, '');
+                                        let baseD = d.toLowerCase().replace(/quater/g, 'quarter').replace(/[-_ ]/g, '').replace(/(dent|damage)/g, '');
+                                        return cleanEst.includes(baseD) || baseD.includes(cleanEst);
+                                    });
+                                    if (matchingEstimate && matchingEstimate.cost) {
+                                        foundCost = matchingEstimate.cost;
+                                    }
+                                }
+                                uniqueEstimates.set(key, foundCost);
+                            }
                         });
                     }
                 });
@@ -241,25 +261,60 @@
 
                 let totalMin = 0; let totalMax = 0;
 
-                if (uniqueEstimates.size === 0) {
-                    tbody.innerHTML = '<tr><td colspan="2">No damages recorded in this project.</td></tr>';
+                if (partCounts.size === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4">No damages recorded in this project.</td></tr>';
                 } else {
-                    uniqueEstimates.forEach((cost, part) => {
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `<td>${part}</td><td>${cost}</td>`;
-                        tbody.appendChild(tr);
+                    const partLimits = {
+                        'headlight-damage': 2,
+                        'runningboard-dent': 2,
+                        'sidemirror-damage': 2,
+                        'taillight-damage': 2,
+                        'windscreen-damage': 2,
+                        'doorouter-dent': 4,
+                        'fender-dent': 2,
+                        'quaterpanel-dent': 2,
+                        'front-bumper-dent': 1,
+                        'rear-bumper-dent': 1,
+                        'bonnet-dent': 1,
+                        'boot-dent': 1,
+                        'roof-dent': 1
+                    };
 
-                        if (cost && typeof cost === 'string') {
-                            let numStr = cost.replace(/,/g, '');
-                            let nums = numStr.match(/\d+/g);
-                            if (nums && nums.length >= 2) {
-                                totalMin += parseInt(nums[0]);
-                                totalMax += parseInt(nums[1]);
-                            } else if (nums && nums.length === 1) {
-                                totalMin += parseInt(nums[0]);
-                                totalMax += parseInt(nums[0]);
+                    partCounts.forEach((rawQty, part) => {
+                        const unitCost = uniqueEstimates.get(part);
+                        let totalCostStr = unitCost;
+                        
+                        // Limit qty based on car anatomy limits, default to 1 if not mapped
+                        const limit = partLimits[part.toLowerCase()] || 1;
+                        let qty = Math.min(rawQty, limit);
+
+                        // Try to parse min and max to multiply by qty
+                        if (unitCost && typeof unitCost === 'string') {
+                            const numbers = unitCost.match(/\d[,0-9]*/g);
+                            if (numbers && numbers.length >= 2) {
+                                let uMin = parseInt(numbers[0].replace(/,/g, ''));
+                                let uMax = parseInt(numbers[1].replace(/,/g, ''));
+                                if (!isNaN(uMin) && !isNaN(uMax)) {
+                                    let tMin = uMin * qty;
+                                    let tMax = uMax * qty;
+                                    totalMin += tMin;
+                                    totalMax += tMax;
+                                    totalCostStr = `₹${tMin.toLocaleString()} - ₹${tMax.toLocaleString()}`;
+                                }
+                            } else if (numbers && numbers.length === 1) {
+                                let uVal = parseInt(numbers[0].replace(/,/g, ''));
+                                if (!isNaN(uVal)) {
+                                    let tVal = uVal * qty;
+                                    totalMin += tVal;
+                                    totalMax += tVal;
+                                    totalCostStr = `₹${tVal.toLocaleString()}`;
+                                }
                             }
                         }
+
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `<td>${part}</td><td>${qty}</td><td>${unitCost}</td><td>${totalCostStr}</td>`;
+                        tbody.appendChild(tr);
                     });
                 }
 

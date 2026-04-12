@@ -352,7 +352,7 @@ async def estimate_prices(payload: dict = Body(...)):
         Format the response EXACTLY as this JSON structure:
         {{
             "estimates": [
-                {{"part": "string", "cost": "string (e.g., ₹1000 - ₹2000)"}},
+                {{"part": "MUST EXACTLY MATCH THE PROVIDED DAMAGE STRING (e.g. front-bumper-dent)", "cost": "string (e.g., ₹1000 - ₹2000)"}},
                 ...
             ],
             "total": "string (e.g., ₹5000 - ₹8000)"
