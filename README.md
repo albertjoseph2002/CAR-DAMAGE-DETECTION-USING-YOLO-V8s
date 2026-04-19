@@ -4,7 +4,9 @@
 [![YOLOv8](https://img.shields.io/badge/YOLOv8-FF1493?style=for-the-badge&logo=yolo)](https://ultralytics.com/)
 [![Gemini API](https://img.shields.io/badge/Gemini_AI-4285F4?style=for-the-badge&logo=google)](https://deepmind.google/technologies/gemini/)
 [![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![Dataset used for training](https://www.kaggle.com/datasets/albertjoseph2002/car-damage-detection-on-13-different-car-parts)
+
+##Dataset used for training 
+Link : https://www.kaggle.com/datasets/albertjoseph2002/car-damage-detection-on-13-different-car-parts
 
 An end-to-end multi-modal web application powered by Deep Learning (YOLOv8) to detect various types of car damages (dents, scratches, broken parts) from images, recorded videos, and real-time webcam feeds. The system also integrates **Google Gemini AI** to automatically generate realistic repair cost estimates based on the identified damages, vehicle make, model, and year.
 
